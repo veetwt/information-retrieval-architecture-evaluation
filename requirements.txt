@@ -1,0 +1,15 @@
+pandas
+pyarrow
+duckdb
+numpy
+scikit-learn
+sentence-transformers
+pyyaml
+pydantic
+requests
+tqdm
+matplotlib
+pytest
+ruff
+jupyter
+boto3

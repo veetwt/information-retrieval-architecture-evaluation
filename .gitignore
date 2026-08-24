@@ -1,0 +1,44 @@
+# Ambiente Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Credenciais
+.env
+*.pem
+*.key
+.aws/
+
+# IDE
+.vscode/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Dados grandes e derivados
+data/raw/
+data/interim/
+data/processed/
+
+# Artefatos de execução
+runs/artifacts/
+
+# Modelos e vetores
+models/
+embeddings/
+*.npy
+
+# Logs
+*.log
+
+# Documento principal do TCC
+/DOC-TCC/TCC_Vitoria_v01.docx
+
+# Arquivos temporários do Microsoft Word
+~$*.docx
+
+# Sistema operacional
+Thumbs.db
+.DS_Store
