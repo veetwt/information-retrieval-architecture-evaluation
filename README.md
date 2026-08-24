@@ -1,4 +1,4 @@
-# TCC — Avaliação de Arquiteturas para Recuperação da Informação
+# TCC: Avaliação de Arquiteturas para Recuperação da Informação
 
 Este repositório contém os scripts, configurações, documentos
 metodológicos e resultados do experimento do TCC.
