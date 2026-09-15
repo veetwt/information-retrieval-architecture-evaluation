@@ -1,4 +1,0 @@
-# file: C:\Users\re93670z\OneDrive - Logicalis\Documentos\TCC\tcc-recuperacao-informacao\src\data\manifest.py
-# hypothesis_version: 6.135.1
-
-['a', 'batch_id', 'dataset', 'dataset_year', 'downloaded_at', 'file_not_found', 'file_size_bytes', 'ingested_at', 'integrity_mismatch', 'original_filename', 'pending.jsonl', 'provenance_missing', 'schema_version', 'sha256', 'source_identifier', 'source_url', 'stored_filename', 'utf-8']

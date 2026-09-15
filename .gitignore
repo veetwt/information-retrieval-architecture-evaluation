@@ -42,3 +42,4 @@ embeddings/
 # Sistema operacional
 Thumbs.db
 .DS_Store
+.hypothesis/
