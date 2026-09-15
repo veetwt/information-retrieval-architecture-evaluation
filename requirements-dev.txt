@@ -1,0 +1,5 @@
+﻿# Dependencias de desenvolvimento e teste
+# Nao incluir em ambientes de producao
+
+hypothesis==6.135.1
+

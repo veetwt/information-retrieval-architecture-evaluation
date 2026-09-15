@@ -1,0 +1,4 @@
+# file: C:\Users\re93670z\OneDrive - Logicalis\Documentos\TCC\tcc-recuperacao-informacao\src\data\config.py
+# hypothesis_version: 6.135.1
+
+['.toml', '.yaml', '.yml', 'CorpusConfig', 'after', 'data/interim', 'data/manifests', 'data/raw', 'rb', 'reports/corpus', 'utf-8']
