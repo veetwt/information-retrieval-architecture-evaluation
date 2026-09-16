@@ -1,0 +1,76 @@
+﻿# Configuracao do lote: Acordaos TCU 2024 (completo)
+# Arquivo fonte: acordao-completo-2024.csv
+# Obtido em: 2026-09-15T23:02:19Z
+# Fonte: https://sites.tcu.gov.br/dados-abertos/jurisprudencia/
+
+# --- Identificacao da fonte e lote ---
+source_identifier: "TCU-portal-publico"
+source_url: "https://sites.tcu.gov.br/dados-abertos/jurisprudencia/"
+batch_id: "tcu-acordaos-completo-2024-v1"
+dataset: "acordaos-tcu"
+dataset_year: 2024
+schema_version: "1.0"
+config_version: "1.0"
+
+# --- Campos do dataset ---
+# Identificador primario: coluna KEY (unica, padrao ACORDAO-COMPLETO-{id})
+primary_key_field: "KEY"
+
+# text_field: a definir apos auditoria de cobertura
+# (candidatos: ACORDAO, RELATORIO, VOTO)
+text_field: null
+
+# metadata_fields: a definir apos auditoria de cobertura
+# (candidatos: NUMACORDAO, ANOACORDAO, COLEGIADO, DATASESSAO, RELATOR,
+#  TIPOPROCESSO, ENTIDADE, PROC, ASSUNTO)
+metadata_fields: null
+
+# allowed_fields: as 33 colunas reconhecidas da fonte
+# Representa os campos conhecidos da fonte — nao uma decisao definitiva
+# de quais serao usados na recuperacao. Sera refinado apos auditoria.
+allowed_fields:
+  - "KEY"
+  - "TIPO"
+  - "TITULO"
+  - "NUMACORDAO"
+  - "ANOACORDAO"
+  - "NUMATA"
+  - "COLEGIADO"
+  - "DATASESSAO"
+  - "RELATOR"
+  - "SITUACAO"
+  - "PROC"
+  - "ACORDAOSRELACIONADOS"
+  - "TIPOPROCESSO"
+  - "INTERESSADOS"
+  - "ENTIDADE"
+  - "RELATORDELIBERACAORECORRIDA"
+  - "MINISTROREVISOR"
+  - "MINISTROAUTORVOTOVENCEDOR"
+  - "REPRESENTANTEMP"
+  - "UNIDADETECNICA"
+  - "ADVOGADO"
+  - "ASSUNTO"
+  - "SUMARIO"
+  - "ACORDAO"
+  - "DECISAO"
+  - "QUORUM"
+  - "MINISTROALEGOUIMPEDIMENTOSESSAO"
+  - "RECURSOS"
+  - "RELATORIO"
+  - "VOTO"
+  - "DECLARACAOVOTO"
+  - "VOTOCOMPLEMENTAR"
+  - "VOTOMINISTROREVISOR"
+
+# required_fields: campos obrigatorios para elegibilidade na canonizacao
+required_fields:
+  - "KEY"
+
+# --- Caminhos (valores padrao do design) ---
+staging_dir: "data/interim"
+raw_dir: "data/raw/tcu"
+manifests_dir: "data/manifests"
+processed_dir: "data/processed/original"
+reports_dir: "reports/corpus"
+fingerprint_log: "runs/artifacts/fingerprint_log.jsonl"
