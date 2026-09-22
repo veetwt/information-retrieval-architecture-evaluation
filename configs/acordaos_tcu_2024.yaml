@@ -16,12 +16,20 @@ config_version: "1.0"
 # Identificador primario: coluna KEY (unica, padrao ACORDAO-COMPLETO-{id})
 primary_key_field: "KEY"
 
-# text_field: campo de texto completo definido apos auditoria de cobertura.
-# ACORDAO tem cobertura ~99,89% (utilizavel ~21.631 apos placeholders de sigilo).
-# ASSUNTO permanece preservado separadamente como campo textual auxiliar (em allowed_fields).
+# text_field: campo textual de referencia usado pelo Auditor (distribuicao de tamanho,
+# Documentos_Sem_Texto). ACORDAO tem cobertura ~99,89%.
 text_field: "ACORDAO"
 
-# metadata_fields: campos estruturados definidos apos auditoria de cobertura/cardinalidade.
+# retrieval_text_fields: campos textuais que compoem a baseline textual principal dos
+# experimentos de recuperacao. Sao preservados como COLUNAS INDEPENDENTES no corpus
+# canonico; o Canonizador NAO concatena esses campos. A estrategia de combinacao/uso
+# (concatenacao, chunking, embeddings) e decidida na etapa posterior de representacao textual.
+retrieval_text_fields:
+  - "ASSUNTO"
+  - "ACORDAO"
+
+# metadata_fields: campos estruturados (recuperacao estruturada/hibrida), definidos apos
+# auditoria de cobertura/cardinalidade.
 metadata_fields:
   - "COLEGIADO"
   - "RELATOR"
@@ -29,6 +37,14 @@ metadata_fields:
   - "DATASESSAO"
   - "ENTIDADE"
   - "UNIDADETECNICA"
+
+# preserved_fields: campos documentais originais preservados no corpus canonico, FORA da
+# baseline principal neste momento. Preservados literalmente (sem limpeza de HTML,
+# normalizacao ou inferencia); ausencia permanece null e nao causa rejeicao.
+preserved_fields:
+  - "SUMARIO"
+  - "RELATORIO"
+  - "VOTO"
 
 # allowed_fields: as 33 colunas reconhecidas da fonte
 # Representa os campos conhecidos da fonte — nao uma decisao definitiva

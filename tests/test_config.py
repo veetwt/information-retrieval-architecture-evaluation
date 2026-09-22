@@ -132,3 +132,40 @@ def test_config_source_version_independentes():
     cfg = CorpusConfig(**dados)
     assert cfg.config_version == "2.0"
     assert cfg.schema_version == "1.0"
+
+
+def test_config_aceita_retrieval_text_fields_subconjunto():
+    """retrieval_text_fields subconjunto de allowed_fields deve ser aceito."""
+    dados = {**CAMPOS_OBRIGATORIOS, "retrieval_text_fields": ["INTEIROTEOR", "ANOACORDAO"]}
+    cfg = CorpusConfig(**dados)
+    assert cfg.retrieval_text_fields == ["INTEIROTEOR", "ANOACORDAO"]
+
+
+def test_config_aceita_preserved_fields_subconjunto():
+    """preserved_fields subconjunto de allowed_fields deve ser aceito."""
+    dados = {**CAMPOS_OBRIGATORIOS, "preserved_fields": ["ANOACORDAO"]}
+    cfg = CorpusConfig(**dados)
+    assert cfg.preserved_fields == ["ANOACORDAO"]
+
+
+def test_config_rejeita_retrieval_text_fields_fora_de_allowed_fields():
+    """retrieval_text_fields com campo não em allowed_fields → ValidationError."""
+    dados = {**CAMPOS_OBRIGATORIOS, "retrieval_text_fields": ["CAMPO_INEXISTENTE"]}
+    with pytest.raises(ValidationError) as exc_info:
+        CorpusConfig(**dados)
+    assert "retrieval_text_fields" in str(exc_info.value).lower() or "allowed_fields" in str(exc_info.value).lower()
+
+
+def test_config_rejeita_preserved_fields_fora_de_allowed_fields():
+    """preserved_fields com campo não em allowed_fields → ValidationError."""
+    dados = {**CAMPOS_OBRIGATORIOS, "preserved_fields": ["FANTASMA"]}
+    with pytest.raises(ValidationError) as exc_info:
+        CorpusConfig(**dados)
+    assert "preserved_fields" in str(exc_info.value).lower() or "allowed_fields" in str(exc_info.value).lower()
+
+
+def test_config_defaults_novas_categorias_none():
+    """retrieval_text_fields e preserved_fields têm default None (compatibilidade)."""
+    cfg = CorpusConfig(**CAMPOS_OBRIGATORIOS)
+    assert cfg.retrieval_text_fields is None
+    assert cfg.preserved_fields is None

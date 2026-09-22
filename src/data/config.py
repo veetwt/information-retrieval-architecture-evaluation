@@ -52,10 +52,19 @@ class CorpusConfig(BaseModel):
     """Nome da coluna que contém o texto completo do documento."""
 
     metadata_fields: list[str] | None = None
-    """Subconjunto de allowed_fields com campos estruturais documentais."""
+    """Subconjunto de allowed_fields com campos estruturados (metadados)."""
 
     required_fields: list[str] | None = None
     """Campos obrigatórios para elegibilidade de um registro na canonização."""
+
+    retrieval_text_fields: list[str] | None = None
+    """Subconjunto de allowed_fields: baseline textual dos experimentos de recuperação.
+    Preservados como colunas independentes no corpus canônico; o Canonizador não os
+    concatena. Default None mantém compatibilidade com configurações anteriores."""
+
+    preserved_fields: list[str] | None = None
+    """Subconjunto de allowed_fields: campos documentais preservados no corpus canônico,
+    fora da baseline principal. Default None mantém compatibilidade."""
 
     # --- Caminhos (com defaults do design) ---
     staging_dir: str = "data/interim"
@@ -93,6 +102,20 @@ class CorpusConfig(BaseModel):
             raise ValueError(
                 f"text_field '{self.text_field}' não está em allowed_fields"
             )
+
+        if self.retrieval_text_fields is not None:
+            invalidos = [f for f in self.retrieval_text_fields if f not in allowed]
+            if invalidos:
+                raise ValueError(
+                    f"retrieval_text_fields contém campos fora de allowed_fields: {invalidos}"
+                )
+
+        if self.preserved_fields is not None:
+            invalidos = [f for f in self.preserved_fields if f not in allowed]
+            if invalidos:
+                raise ValueError(
+                    f"preserved_fields contém campos fora de allowed_fields: {invalidos}"
+                )
 
         return self
 

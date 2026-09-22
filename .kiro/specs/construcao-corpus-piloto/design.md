@@ -122,9 +122,11 @@ class CorpusConfig(BaseModel):
     # --- Campos opcionais ---
     source_url: str | None = None
     primary_key_field: str | None = None
-    text_field: str | None = None
+    text_field: str | None = None            # campo textual de referência p/ auditoria
     metadata_fields: list[str] | None = None
     required_fields: list[str] | None = None
+    retrieval_text_fields: list[str] | None = None  # baseline textual (colunas independentes)
+    preserved_fields: list[str] | None = None        # campos documentais preservados
 
     # --- Caminhos (com defaults) ---
     staging_dir: str = "data/interim"
@@ -137,10 +139,20 @@ class CorpusConfig(BaseModel):
     # Validações cross-field (model_validator) — contrato:
     #   - metadata_fields deve ser subconjunto de allowed_fields (quando ambos não-nulos)
     #   - required_fields deve ser subconjunto de allowed_fields (quando ambos não-nulos)
+    #   - retrieval_text_fields deve ser subconjunto de allowed_fields (quando não-nulo)
+    #   - preserved_fields deve ser subconjunto de allowed_fields (quando não-nulo)
     #   - Se metadata_fields e required_fields forem declarados simultaneamente,
     #     required_fields pode incluir campos de metadata_fields
     #   - primary_key_field, quando declarado, deve estar em allowed_fields
     #   - text_field, quando declarado, deve estar em allowed_fields
+    #   - retrieval_text_fields, metadata_fields e preserved_fields podem coexistir; um
+    #     mesmo campo pode aparecer em mais de uma categoria (não há exigência de
+    #     disjunção). O Canonizador garante coluna única, sem duplicação.
+    #   - Semântica das categorias:
+    #       text_field           → campo textual de referência para a auditoria
+    #       retrieval_text_fields → baseline textual dos experimentos (colunas independentes)
+    #       metadata_fields       → campos estruturados p/ recuperação estruturada/híbrida
+    #       preserved_fields      → campos documentais preservados, fora da baseline principal
     #   - Para canonização: primary_key_field e text_field devem estar declarados no Config_File
     #     (validação feita em runtime pelo Canonizador antes de processar o dataset)
 
@@ -554,7 +566,9 @@ class Canonizador:
         2. Valida que primary_key_field e text_field existem como colunas no dataset
            — aborta com erro de configuração se ausentes
         3. Lê o CSV de data/raw/
-        4. Aplica allowed_fields → calcula excluded_fields
+        4. Aplica allowed_fields → calcula excluded_fields; determina o conjunto ordenado
+           de colunas canônicas a partir de retrieval_text_fields + metadata_fields +
+           preserved_fields (ordem determinística do Design, sem duplicação de coluna)
         5. Para cada registro, extrai o valor original da coluna identificada por primary_key_field
            e o preserva sem modificação como source_key (não corrige, não normaliza, não infere)
         6. Registros com source_key nulo, vazio ou composto apenas por espaços em branco são
@@ -629,7 +643,11 @@ class Canonizador:
     ) -> Path:
         """Escreve '{parquet_stem}_metadata.json' com:
         parquet_file, created_at, config_version, batch_id,
-        allowed_fields, excluded_fields, dataset_fingerprint.
+        allowed_fields, excluded_fields, text_field, retrieval_text_fields,
+        metadata_fields, preserved_fields, canonical_columns, field_roles,
+        dataset_fingerprint.
+        canonical_columns registra a ordem determinística das colunas do Parquet.
+        field_roles mapeia cada campo incluído para a(s) categoria(s) em que foi declarado.
         O dataset_fingerprint é obrigatório no sidecar — sua ausência impede
         a publicação do Corpus_Canonico.
         Retorna o Path do sidecar gravado."""
@@ -683,9 +701,11 @@ source_url: "https://portal.tcu.gov.br/acordaos"
 
 # Campos do dataset (a confirmar após auditoria inicial)
 primary_key_field: null       # ex: "NUMACORDAO" — definir após auditoria
-text_field: null              # ex: "INTEIROTEOR" — definir após auditoria
+text_field: null              # campo textual de referência p/ auditoria; ex: "ACORDAO"
 allowed_fields: []            # preencher após auditoria
-metadata_fields: []           # subconjunto de allowed_fields
+metadata_fields: []           # subconjunto de allowed_fields (metadados estruturados)
+retrieval_text_fields: []     # subconjunto de allowed_fields (baseline textual; colunas independentes)
+preserved_fields: []          # subconjunto de allowed_fields (documentais preservados)
 required_fields: []           # campos obrigatórios para elegibilidade
 
 # Regras de validação por campo (opcional; usar apenas valores explícitos)
@@ -756,16 +776,39 @@ Formato: JSON Lines (uma entrada por linha). Arquivo append-only.
 |---|---|---|
 | `doc_id` | string | `tcu-{sha256(source_key)[:12]}` — identificador interno derivado de `source_key`; sequência: `primary_key_field` → `source_key` → `doc_id` |
 | `source_key` | string | Valor original da coluna `primary_key_field` do dataset, preservado sem modificação, normalização ou inferência |
-| `{text_field}` | string \| null | Campo de texto completo configurado (nome real definido após auditoria) |
 
-**Colunas condicionais** (presentes quando configuradas em `metadata_fields`):
+**Colunas de campos originais** (presentes quando configuradas): derivadas das três
+categorias `retrieval_text_fields`, `metadata_fields` e `preserved_fields`. Cada campo
+declarado ocupa uma coluna independente; um campo declarado em mais de uma categoria
+aparece uma única vez (sem duplicação).
 
-| Coluna | Tipo Parquet | Exemplos candidatos (confirmar após auditoria) |
+| Categoria | Papel | Exemplos (após auditoria) |
 |---|---|---|
-| campos de `metadata_fields` | string \| null | ANOACORDAO, RELATOR, COLEGIADO, TIPOPROCESSO, ASSUNTO, ENTIDADE, NUMPROCESSO, etc. |
+| `retrieval_text_fields` | Baseline textual dos experimentos (colunas independentes; sem concatenação) | ASSUNTO, ACORDAO |
+| `metadata_fields` | Metadados estruturados p/ recuperação estruturada/híbrida | COLEGIADO, RELATOR, TIPOPROCESSO, DATASESSAO, ENTIDADE, UNIDADETECNICA |
+| `preserved_fields` | Campos documentais preservados, fora da baseline principal | SUMARIO, RELATORIO, VOTO |
 
-> Valores ausentes ou nulos são preservados como `null` no Parquet. Nunca preenchidos
-> por inferência. O Canonizador não infere nem corrige valores.
+**Ordem determinística das colunas (contrato):**
+
+```
+doc_id, source_key,
+  <retrieval_text_fields na ordem do Config_File>,
+  <metadata_fields na ordem do Config_File, exceto os já incluídos acima>,
+  <preserved_fields na ordem do Config_File, exceto os já incluídos acima>
+```
+
+A ordem é: `doc_id`, `source_key`, seguidos da concatenação das três listas na ordem
+`retrieval_text_fields → metadata_fields → preserved_fields`, preservando a ordem
+declarada em cada lista e removendo repetições na primeira ocorrência (a primeira
+categoria em que o campo aparece determina sua posição). `text_field` NÃO adiciona coluna
+por si só: ele é o campo de referência da auditoria e só aparece no Parquet se também
+estiver declarado em uma das três categorias acima (tipicamente em `retrieval_text_fields`).
+
+> Valores ausentes ou nulos são preservados como `null` no Parquet. Tipo de todas as
+> colunas de campos originais: `string | null`. Nunca preenchidos por inferência, nunca
+> concatenados, nunca com HTML removido. O Canonizador não infere, normaliza nem corrige
+> valores. A ausência de um campo de qualquer categoria não torna o documento não elegível
+> nesta etapa, salvo regra de elegibilidade explícita posterior.
 
 ---
 
@@ -777,11 +820,29 @@ Formato: JSON Lines (uma entrada por linha). Arquivo append-only.
   "created_at": "2026-01-15T14:32:11Z",
   "config_version": "1.0",
   "batch_id": "tcu-acordaos-2024-v1",
-  "allowed_fields": ["NUMACORDAO", "ANOACORDAO", "RELATOR", "INTEIROTEOR"],
+  "allowed_fields": ["KEY", "ASSUNTO", "ACORDAO", "COLEGIADO", "SUMARIO"],
   "excluded_fields": ["VISAOGERAL"],
+  "text_field": "ACORDAO",
+  "retrieval_text_fields": ["ASSUNTO", "ACORDAO"],
+  "metadata_fields": ["COLEGIADO"],
+  "preserved_fields": ["SUMARIO"],
+  "canonical_columns": ["doc_id", "source_key", "ASSUNTO", "ACORDAO", "COLEGIADO", "SUMARIO"],
+  "field_roles": {
+    "ASSUNTO": ["retrieval_text_fields"],
+    "ACORDAO": ["retrieval_text_fields"],
+    "COLEGIADO": ["metadata_fields"],
+    "SUMARIO": ["preserved_fields"]
+  },
   "dataset_fingerprint": "b4e9a1c3d5f7e0b2a4c6d8f0e2b4a6c8d0e2f4a6b8c0d2e4f6a8b0c2d4e6f8a0"
 }
 ```
+
+> O sidecar registra explicitamente as categorias declaradas (`text_field`,
+> `retrieval_text_fields`, `metadata_fields`, `preserved_fields`), a lista ordenada de
+> colunas do Parquet (`canonical_columns`) e o papel de cada campo incluído
+> (`field_roles`), de modo que o papel de cada coluna seja auditável sem inspecionar o
+> Config_File. Um campo em mais de uma categoria lista todos os seus papéis em
+> `field_roles`, mas ocupa uma única coluna em `canonical_columns`.
 
 ---
 
@@ -994,6 +1055,48 @@ Essa separação evita que campos opcionais com baixa cobertura (identificados n
 causem descarte massivo de registros elegíveis.
 
 > O tratamento de campos não obrigatórios com valores problemáticos também é definido pela política de canonização do `Config_File`, não por comportamento implícito do código. A política padrão para o baseline é: preservar o valor original, registrar o problema em `_issues.jsonl` e aceitar o registro. Políticas alternativas futuras devem ser declaradas explicitamente, preservar `data/raw/` inalterado e ser auditáveis.
+
+---
+
+### 6.10 Categorias de campos: `text_field`, `retrieval_text_fields`, `metadata_fields`, `preserved_fields`
+
+A representação canônica distingue quatro papéis de campo, todos declarados explicitamente
+no `Config_File` e todos subconjuntos de `allowed_fields`:
+
+- **`text_field`** — campo textual único de **referência para a auditoria** (distribuição
+  de tamanho de texto, Documentos_Sem_Texto). Não adiciona coluna por si só ao Parquet:
+  só aparece no corpus canônico se também estiver declarado em uma das três categorias de
+  coluna abaixo (tipicamente em `retrieval_text_fields`).
+- **`retrieval_text_fields`** — campos textuais previstos para compor a **baseline textual
+  principal** dos experimentos de recuperação. São preservados como **colunas
+  independentes**; o Canonizador **não concatena** esses campos entre si nem com outros. A
+  estratégia de combinação (concatenação, chunking, embeddings) pertence à etapa posterior
+  de representação textual, fora desta spec.
+- **`metadata_fields`** — campos estruturados para recuperação estruturada/híbrida.
+  Semântica preservada da versão anterior da spec.
+- **`preserved_fields`** — campos documentais originais preservados no corpus canônico,
+  **sem participação automática** na baseline principal.
+
+Motivação: a exploração do corpus TCU 2024 mostrou que ACORDAO (cobertura ~99,9%) e
+ASSUNTO (~99,9%) compõem a baseline textual desejada, enquanto SUMARIO, RELATORIO e VOTO
+(cobertura ~27%) são peças documentais que se deseja preservar para análises
+complementares, sem integrá-las à baseline principal neste momento. Registrar essa
+distinção explicitamente no `Config_File` (e não no código) mantém a política declarativa,
+reprodutível e auditável, coerente com a decisão 6.6.
+
+**Preservação literal e não-duplicação:** todos os campos das três categorias de coluna
+são preservados literalmente (sem limpeza de HTML, sem normalização, sem inferência);
+valores ausentes permanecem `null`; a ausência não causa rejeição nesta etapa. Um campo
+declarado em mais de uma categoria ocupa **uma única coluna** (posição definida pela
+primeira categoria em que aparece, na ordem `retrieval_text_fields → metadata_fields →
+preserved_fields`). O papel declarado de cada campo é registrado em `field_roles` no
+sidecar. Como `text_field=ACORDAO` também está em `retrieval_text_fields`, não há coluna
+duplicada de ACORDAO.
+
+Alternativa descartada: criar já uma coluna combinada `retrieval_text` = ASSUNTO + ACORDAO.
+Descartada porque a concatenação é decisão da etapa de representação textual, deve ser
+explícita e reproduzível lá, e embuti-la no Canonizador reduziria a rastreabilidade e
+fixaria prematuramente uma estratégia de baseline.
 
 ---
 

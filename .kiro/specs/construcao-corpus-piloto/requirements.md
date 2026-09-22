@@ -19,9 +19,12 @@ reprodutibilidade total do processo.
   armazenados sem modificação em `data/raw/`.
 - **Corpus_Canonico**: Representação tabular padronizada do corpus, armazenada em formato
   Parquet em `data/processed/original/`. Contém, para cada documento elegível: `doc_id`,
-  `source_key`, o campo de texto completo configurado, e os campos estruturados originais
-  selecionados em `allowed_fields` / `metadata_fields` após a auditoria do dataset. Nenhum
-  campo é preenchido, inferido ou completado por modelos de linguagem.
+  `source_key`, e os campos originais selecionados no Config_File nas categorias
+  `retrieval_text_fields` (baseline textual), `metadata_fields` (metadados estruturados) e
+  `preserved_fields` (campos documentais adicionais preservados), todos subconjuntos de
+  `allowed_fields`. Cada campo declarado ocupa uma coluna independente; nenhuma coluna é
+  duplicada quando um campo aparece em mais de uma categoria. Nenhum campo é preenchido,
+  concatenado, limpo (HTML), normalizado, inferido ou completado por modelos de linguagem.
 - **Manifest**: Arquivo de registro de proveniência que documenta metadados de cada arquivo
   bruto incorporado ao corpus (campos obrigatórios: `original_filename`, `stored_filename`,
   `downloaded_at`, `ingested_at`, `file_size_bytes`, `sha256`, `source_url` ou
@@ -66,6 +69,23 @@ reprodutibilidade total do processo.
   entidade, unidade técnica) que serão preservados no Corpus_Canonico como metadados para
   uso nos experimentos posteriores. Os campos específicos são definidos após a auditoria
   do dataset real; nenhum campo é obrigatório antes da inspeção.
+- **text_field**: Campo textual único, declarado no Config_File, usado como campo de
+  texto completo **de referência para a auditoria** (distribuição de tamanho de texto,
+  identificação de Documentos_Sem_Texto). É um único campo, distinto do conjunto de
+  campos que compõem a representação textual dos experimentos de recuperação.
+- **retrieval_text_fields**: Lista, declarada no Config_File, dos campos textuais
+  previstos para compor a **representação textual principal (baseline)** dos experimentos
+  de recuperação posteriores. Subconjunto de `allowed_fields`. Os campos são preservados
+  como colunas independentes no Corpus_Canonico, sem qualquer concatenação, limpeza de
+  HTML, normalização ou inferência pelo Canonizador. A estratégia de combinação/uso desses
+  campos (por exemplo, concatenação ou chunking) é responsabilidade exclusiva da etapa
+  posterior de representação textual, fora do escopo desta spec. A presença de um campo em
+  `retrieval_text_fields` não o torna obrigatório para elegibilidade nesta etapa.
+- **preserved_fields**: Lista, declarada no Config_File, de campos textuais documentais
+  originais preservados no Corpus_Canonico como colunas independentes, **sem participação
+  automática na baseline principal** de recuperação. Subconjunto de `allowed_fields`.
+  Preservados literalmente, sem limpeza de HTML, normalização ou inferência. A presença de
+  um campo em `preserved_fields` não o torna obrigatório para elegibilidade nesta etapa.
 - **excluded_fields**: Lista de campos excluídos da representação canônica original,
   registrada de forma associada à versão do Corpus_Canonico para garantir auditabilidade.
 - **Duplicidade_Por_Conteudo**: Situação em que o Hash_SHA256 de um arquivo recém-recebido
@@ -302,8 +322,10 @@ informação.
 7. THE Canonizador SHALL preservar o texto completo do documento, no campo configurado
    como texto completo no Config_File, sem alteração de conteúdo.
 8. IF o Corpus_Original estiver vazio (zero documentos), THEN THE Canonizador SHALL
-   produzir um arquivo Parquet válido com zero linhas e o schema de colunas definido no
-   Config_File, sem encerrar com erro.
+   produzir um arquivo Parquet válido com zero linhas e o schema completo de colunas
+   definido no Config_File (`doc_id`, `source_key`, e as colunas de `retrieval_text_fields`,
+   `metadata_fields` e `preserved_fields`, na ordem determinística definida no Design),
+   sem encerrar com erro.
 9. IF o Corpus_Canonico já existir em `data/processed/original/`, THEN THE Canonizador
    SHALL criar um novo arquivo com sufixo de timestamp no formato `YYYYMMDD_HHMMSS` sem
    sobrescrever o arquivo existente.
@@ -333,6 +355,28 @@ informação.
     metadados semânticos derivados SHALL ocorrer exclusivamente em artefatos separados em
     `data/processed/enriched/`, preservando o `doc_id` do documento original
     correspondente.
+13. THE Corpus_Canonico SHALL preservar, para cada Registro_Elegivel, os valores originais
+    dos campos declarados em `retrieval_text_fields` no Config_File, cada um como uma coluna
+    independente; os valores SHALL ser preservados literalmente, sem concatenação entre si
+    ou com qualquer outro campo, sem limpeza de HTML, sem normalização e sem inferência; IF
+    um campo de `retrieval_text_fields` estiver ausente ou vazio em determinado documento,
+    THEN o valor SHALL permanecer nulo no Corpus_Canonico e essa ausência NÃO SHALL, por si
+    só, tornar o documento não elegível nesta etapa, salvo regra de elegibilidade
+    explicitamente declarada no Config_File em etapa posterior.
+14. THE Corpus_Canonico SHALL preservar, para cada Registro_Elegivel, os valores originais
+    dos campos declarados em `preserved_fields` no Config_File, cada um como uma coluna
+    independente; os valores SHALL ser preservados literalmente, sem limpeza de HTML, sem
+    normalização e sem inferência; IF um campo de `preserved_fields` estiver ausente ou
+    vazio em determinado documento, THEN o valor SHALL permanecer nulo no Corpus_Canonico e
+    essa ausência NÃO SHALL, por si só, tornar o documento não elegível nesta etapa; campos
+    de `preserved_fields` NÃO participam automaticamente da baseline textual principal.
+15. WHEN um campo estiver declarado em mais de uma categoria do Config_File
+    (`text_field`, `retrieval_text_fields`, `metadata_fields`, `preserved_fields`), THE
+    Canonizador SHALL incluí-lo no Corpus_Canonico como exatamente uma coluna, sem
+    duplicação, preservando a ordem determinística de colunas definida no Design; THE
+    Canonizador SHALL registrar, no artefato sidecar associado à versão do Corpus_Canonico,
+    o papel declarado (categoria ou categorias) de cada campo incluído, de modo que o papel
+    seja auditável sem inspecionar o Config_File.
 
 ---
 
@@ -462,9 +506,9 @@ Config_File.
 
 1. THE Pipeline SHALL ler todos os parâmetros de execução (caminhos de diretórios,
    identificador da fonte, campos de metadados obrigatórios, versão do schema do
-   Manifest, `allowed_fields`) a partir de um único Config_File localizado no diretório
-   `configs/`, cujo nome de arquivo é especificado como argumento obrigatório na
-   invocação do Pipeline.
+   Manifest, `allowed_fields`, `retrieval_text_fields`, `preserved_fields`) a partir de um
+   único Config_File localizado no diretório `configs/`, cujo nome de arquivo é
+   especificado como argumento obrigatório na invocação do Pipeline.
 2. THE Config_File SHALL estar em formato YAML ou TOML e ser validado contra um schema
    definido pelo Pipeline antes da execução; se ambos os formatos forem fornecidos, THE
    Pipeline SHALL utilizar o arquivo cujo nome foi passado como argumento.

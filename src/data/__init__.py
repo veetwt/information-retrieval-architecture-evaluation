@@ -11,6 +11,7 @@ from .auditor import (
     PendingManifestError,
     ProvenanceError,
 )
+from .canonizador import Canonizador, CanonicalizationResult
 
 __all__ = [
     "CorpusConfig",
@@ -23,4 +24,6 @@ __all__ = [
     "FieldAnalysisStatus",
     "PendingManifestError",
     "ProvenanceError",
+    "Canonizador",
+    "CanonicalizationResult",
 ]
