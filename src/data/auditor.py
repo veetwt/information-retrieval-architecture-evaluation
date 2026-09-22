@@ -159,6 +159,25 @@ class Auditor:
                     break
         return previous
 
+    @staticmethod
+    def _detect_delimiter(corpus_path: Path) -> str:
+        """Detecta o delimitador do CSV a partir da primeira linha (cabeçalho).
+
+        Datasets públicos do TCU usam '|' como separador; outros usam ','.
+        Usa csv.Sniffer sobre o cabeçalho, restringindo aos delimitadores
+        plausíveis. Em caso de falha de detecção, retorna ',' (padrão do CSV).
+        Não modifica o arquivo; apenas lê o início para inspeção.
+        """
+        try:
+            with open(corpus_path, encoding="utf-8", errors="replace", newline="") as f:
+                amostra = f.readline()
+            if not amostra:
+                return ","
+            dialect = csv.Sniffer().sniff(amostra, delimiters="|,;\t")
+            return dialect.delimiter
+        except (csv.Error, OSError):
+            return ","
+
     def _read_csv(self, corpus_path: Path) -> pd.DataFrame:
         """Lê o CSV para um DataFrame com suporte a campos grandes.
 
@@ -167,15 +186,21 @@ class Auditor:
         pandas, que respeita csv.field_size_limit, garantindo leitura de campos
         textuais extensos sem truncamento nem erro.
 
+        O delimitador é detectado automaticamente (csv.Sniffer), pois o dataset
+        do TCU usa '|' enquanto outros usam ','. Aspas duplas embutidas ("")
+        dentro de campos entre aspas são tratadas pela convenção padrão do CSV.
+
         Lê todas as colunas como string (dtype=str) para preservar os valores
         originais sem inferência ou coerção de tipo, alinhado à política do
         pipeline de nunca inferir ou normalizar valores. Valores ausentes são
         mantidos como pd.NA (sem conversão para NaN de ponto flutuante).
         """
+        delimiter = self._detect_delimiter(corpus_path)
         limite_anterior = self._raise_csv_field_size_limit()
         try:
             df = pd.read_csv(
                 corpus_path,
+                sep=delimiter,
                 dtype=str,
                 keep_default_na=True,
                 na_values=[],
