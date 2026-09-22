@@ -1,0 +1,59 @@
+{
+  "n_rows": 21661,
+  "n_cols": 33,
+  "column_names": [
+    "KEY",
+    "TIPO",
+    "TITULO",
+    "NUMACORDAO",
+    "ANOACORDAO",
+    "NUMATA",
+    "COLEGIADO",
+    "DATASESSAO",
+    "RELATOR",
+    "SITUACAO",
+    "PROC",
+    "ACORDAOSRELACIONADOS",
+    "TIPOPROCESSO",
+    "INTERESSADOS",
+    "ENTIDADE",
+    "RELATORDELIBERACAORECORRIDA",
+    "MINISTROREVISOR",
+    "MINISTROAUTORVOTOVENCEDOR",
+    "REPRESENTANTEMP",
+    "UNIDADETECNICA",
+    "ADVOGADO",
+    "ASSUNTO",
+    "SUMARIO",
+    "ACORDAO",
+    "DECISAO",
+    "QUORUM",
+    "MINISTROALEGOUIMPEDIMENTOSESSAO",
+    "RECURSOS",
+    "RELATORIO",
+    "VOTO",
+    "DECLARACAOVOTO",
+    "VOTOCOMPLEMENTAR",
+    "VOTOMINISTROREVISOR"
+  ],
+  "audit_timestamp": "2026-09-22T17:22:15Z",
+  "auditor_version": "1.0.0",
+  "source_file": "acordao-completo-2024.csv",
+  "duplicates_analysis": {
+    "status": "ok",
+    "result": 0
+  },
+  "text_length_analysis": {
+    "status": "not_configured",
+    "result": null
+  },
+  "docs_without_text": {
+    "status": "not_configured",
+    "result": null
+  },
+  "metadata_coverage": {
+    "status": "not_configured",
+    "result": null
+  },
+  "config_inconsistencies": []
+}

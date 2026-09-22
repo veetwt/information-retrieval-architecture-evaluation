@@ -16,14 +16,19 @@ config_version: "1.0"
 # Identificador primario: coluna KEY (unica, padrao ACORDAO-COMPLETO-{id})
 primary_key_field: "KEY"
 
-# text_field: a definir apos auditoria de cobertura
-# (candidatos: ACORDAO, RELATORIO, VOTO)
-text_field: null
+# text_field: campo de texto completo definido apos auditoria de cobertura.
+# ACORDAO tem cobertura ~99,89% (utilizavel ~21.631 apos placeholders de sigilo).
+# ASSUNTO permanece preservado separadamente como campo textual auxiliar (em allowed_fields).
+text_field: "ACORDAO"
 
-# metadata_fields: a definir apos auditoria de cobertura
-# (candidatos: NUMACORDAO, ANOACORDAO, COLEGIADO, DATASESSAO, RELATOR,
-#  TIPOPROCESSO, ENTIDADE, PROC, ASSUNTO)
-metadata_fields: null
+# metadata_fields: campos estruturados definidos apos auditoria de cobertura/cardinalidade.
+metadata_fields:
+  - "COLEGIADO"
+  - "RELATOR"
+  - "TIPOPROCESSO"
+  - "DATASESSAO"
+  - "ENTIDADE"
+  - "UNIDADETECNICA"
 
 # allowed_fields: as 33 colunas reconhecidas da fonte
 # Representa os campos conhecidos da fonte — nao uma decisao definitiva
