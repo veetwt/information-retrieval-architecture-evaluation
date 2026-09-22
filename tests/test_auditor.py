@@ -415,7 +415,11 @@ def test_campo_csv_grande_e_lido_sem_erro(tmp_path):
     n_rows=st.integers(min_value=1, max_value=30),
     fill_ratio=st.floats(min_value=0.0, max_value=1.0),
 )
-@settings(max_examples=100, suppress_health_check=[HealthCheck.too_slow])
+@settings(
+    max_examples=100,
+    deadline=None,  # cada exemplo faz I/O real (ingestão + leitura de CSV); timing variável
+    suppress_health_check=[HealthCheck.too_slow],
+)
 def test_property_cobertura_intervalo_valido(tmp_path_factory, n_rows, fill_ratio):
     """
     Feature: construcao-corpus-piloto
