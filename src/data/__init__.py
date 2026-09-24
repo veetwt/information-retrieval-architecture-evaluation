@@ -12,6 +12,7 @@ from .auditor import (
     ProvenanceError,
 )
 from .canonizador import Canonizador, CanonicalizationResult
+from .seletor import SeletorExperimental, SelectionResult, FingerprintMismatchError
 
 __all__ = [
     "CorpusConfig",
@@ -26,4 +27,7 @@ __all__ = [
     "ProvenanceError",
     "Canonizador",
     "CanonicalizationResult",
+    "SeletorExperimental",
+    "SelectionResult",
+    "FingerprintMismatchError",
 ]

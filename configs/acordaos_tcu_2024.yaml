@@ -88,10 +88,28 @@ allowed_fields:
 required_fields:
   - "KEY"
 
+# --- Politica de elegibilidade experimental (Selecao_Experimental) ---
+# Todos os criterios sao explicitos; nada e embutido no codigo. O placeholder de
+# sigilo de ACORDAO e declarado aqui como prefixo proibido.
+experimental_eligibility:
+  eligibility_policy_version: "1.0"
+  required_text_fields:            # nao-nulo, nao-vazio, nao-so-espacos (apos normalizacao)
+    - "ACORDAO"
+    - "ASSUNTO"
+  forbidden_exact_values:          # valor exato proibido (comparacao literal, sem normalizacao)
+    ASSUNTO:
+      - "SIGILOSO"
+  sigilo_placeholder:              # placeholder de sigilo de ACORDAO
+    field: "ACORDAO"
+    match: "prefix"                # "prefix" | "exact" (sobre o texto normalizado)
+    patterns:
+      - "Documento classificado como sigiloso"
+
 # --- Caminhos (valores padrao do design) ---
 staging_dir: "data/interim"
 raw_dir: "data/raw/tcu"
 manifests_dir: "data/manifests"
 processed_dir: "data/processed/original"
+experimental_dir: "data/processed/experimental"
 reports_dir: "reports/corpus"
 fingerprint_log: "runs/artifacts/fingerprint_log.jsonl"

@@ -15,6 +15,47 @@ import yaml
 from pydantic import BaseModel, Field, model_validator
 
 
+class SigiloPlaceholder(BaseModel):
+    """Declaração do placeholder de sigilo de um campo textual (ex.: ACORDAO)."""
+
+    field: str
+    """Campo ao qual o placeholder se aplica (ex.: 'ACORDAO')."""
+
+    match: str = "prefix"
+    """Modo de correspondência: 'prefix' ou 'exact' (sobre o texto normalizado)."""
+
+    patterns: list[str] = Field(default_factory=list)
+    """Padrões declarados de placeholder de sigilo."""
+
+    @model_validator(mode="after")
+    def _validate_match(self) -> "SigiloPlaceholder":
+        if self.match not in ("prefix", "exact"):
+            raise ValueError(
+                f"sigilo_placeholder.match inválido: '{self.match}' (use 'prefix' ou 'exact')"
+            )
+        return self
+
+
+class ExperimentalEligibility(BaseModel):
+    """Política de elegibilidade experimental (Selecao_Experimental).
+
+    Declarada no Config_File; nenhum critério é embutido silenciosamente no código.
+    """
+
+    eligibility_policy_version: str
+    """Versão própria da política de elegibilidade."""
+
+    required_text_fields: list[str] = Field(default_factory=list)
+    """Campos textuais que, se nulos/vazios/só-espaços (após normalização), tornam o
+    documento não elegível."""
+
+    forbidden_exact_values: dict[str, list[str]] = Field(default_factory=dict)
+    """Mapa campo → lista de valores exatos proibidos (comparação literal, sem normalização)."""
+
+    sigilo_placeholder: SigiloPlaceholder | None = None
+    """Declaração do placeholder de sigilo (ex.: para ACORDAO)."""
+
+
 class CorpusConfig(BaseModel):
     """Configuração central do pipeline de construção do corpus piloto."""
 
@@ -66,11 +107,16 @@ class CorpusConfig(BaseModel):
     """Subconjunto de allowed_fields: campos documentais preservados no corpus canônico,
     fora da baseline principal. Default None mantém compatibilidade."""
 
+    # --- Política de elegibilidade experimental (opcional; default None) ---
+    experimental_eligibility: ExperimentalEligibility | None = None
+    """Politica_Elegibilidade_Experimental. Default None mantém compatibilidade."""
+
     # --- Caminhos (com defaults do design) ---
     staging_dir: str = "data/interim"
     raw_dir: str = "data/raw"
     manifests_dir: str = "data/manifests"
     processed_dir: str = "data/processed/original"
+    experimental_dir: str = "data/processed/experimental"
     reports_dir: str = "reports/corpus"
     fingerprint_log: str = "runs/artifacts/fingerprint_log.jsonl"
 
@@ -115,6 +161,26 @@ class CorpusConfig(BaseModel):
             if invalidos:
                 raise ValueError(
                     f"preserved_fields contém campos fora de allowed_fields: {invalidos}"
+                )
+
+        if self.experimental_eligibility is not None:
+            ee = self.experimental_eligibility
+            invalidos = [f for f in ee.required_text_fields if f not in allowed]
+            if invalidos:
+                raise ValueError(
+                    f"experimental_eligibility.required_text_fields contém campos fora "
+                    f"de allowed_fields: {invalidos}"
+                )
+            invalidos = [f for f in ee.forbidden_exact_values if f not in allowed]
+            if invalidos:
+                raise ValueError(
+                    f"experimental_eligibility.forbidden_exact_values referencia campos "
+                    f"fora de allowed_fields: {invalidos}"
+                )
+            if ee.sigilo_placeholder is not None and ee.sigilo_placeholder.field not in allowed:
+                raise ValueError(
+                    f"experimental_eligibility.sigilo_placeholder.field "
+                    f"'{ee.sigilo_placeholder.field}' não está em allowed_fields"
                 )
 
         return self

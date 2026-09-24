@@ -88,6 +88,25 @@ reprodutibilidade total do processo.
   um campo em `preserved_fields` não o torna obrigatório para elegibilidade nesta etapa.
 - **excluded_fields**: Lista de campos excluídos da representação canônica original,
   registrada de forma associada à versão do Corpus_Canonico para garantir auditabilidade.
+- **Selecao_Experimental**: Subconjunto do Corpus_Canonico composto pelos documentos
+  elegíveis segundo a `Politica_Elegibilidade_Experimental`, materializado como artefato
+  derivado e reproduzível em `data/processed/experimental/`, **sem modificar nem
+  sobrescrever** o Corpus_Canonico. Preserva exatamente as mesmas colunas, ordem e valores
+  do Corpus_Canonico para os documentos elegíveis; nenhuma coluna de elegibilidade é
+  adicionada. Documentos não elegíveis não são apagados do Corpus_Canonico.
+- **SeletorExperimental**: Módulo Python que lê o Corpus_Canonico (somente leitura),
+  aplica a `Politica_Elegibilidade_Experimental` e produz a `Selecao_Experimental` com seus
+  artefatos de rastreabilidade. Não realiza chunking, concatenação de campos, geração de
+  embeddings nem recuperação.
+- **Politica_Elegibilidade_Experimental** (`experimental_eligibility`): Bloco declarado no
+  Config_File, com versão própria (`eligibility_policy_version`), que define os critérios de
+  elegibilidade de um documento para o experimento principal. Nenhum critério é embutido
+  silenciosamente no código; em particular, o padrão/prefixo de placeholder de sigilo de
+  ACORDAO é declarado no Config_File.
+- **selection_fingerprint**: Identificador determinístico calculado sobre o schema e o
+  conteúdo ordenado da `Selecao_Experimental` (subconjunto elegível), independente de
+  metadados internos do Parquet. Registrado no manifesto da seleção junto ao
+  `dataset_fingerprint` do Corpus_Canonico de origem.
 - **Duplicidade_Por_Conteudo**: Situação em que o Hash_SHA256 de um arquivo recém-recebido
   coincide com o `sha256` de uma entrada já existente no Manifest, independentemente do
   nome do arquivo. O conteúdo já foi ingerido; nenhuma nova cópia deve ser criada.
@@ -526,3 +545,74 @@ Config_File.
 6. WHEN o Pipeline é executado, THE Pipeline SHALL registrar o `dataset_fingerprint` do
    Corpus_Canonico produzido em um arquivo de log de reprodutibilidade, de modo que
    execuções futuras possam verificar a propriedade determinística.
+
+---
+
+### Requirement 10: Seleção experimental do corpus
+
+**User Story:** Como pesquisador, quero derivar do Corpus_Canonico um subconjunto
+experimental reproduzível de documentos elegíveis por conteúdo textual, sem modificar o
+corpus canônico, para conduzir o experimento principal sobre documentos efetivamente
+utilizáveis.
+
+#### Acceptance Criteria
+
+1. THE SeletorExperimental SHALL ler o Corpus_Canonico de `data/processed/original/` em
+   modo somente leitura e SHALL, em nenhuma circunstância, modificar, sobrescrever ou
+   apagar o Corpus_Canonico ou qualquer de seus artefatos.
+2. WHEN o SeletorExperimental é executado, THE SeletorExperimental SHALL, antes de aplicar
+   a seleção, calcular o `dataset_fingerprint` atual do Corpus_Canonico e compará-lo ao
+   `dataset_fingerprint` registrado no sidecar de origem; IF os valores divergirem, THEN
+   THE SeletorExperimental SHALL abortar a operação sem produzir nenhum artefato e
+   registrar uma mensagem de erro indicando a divergência de fingerprint.
+3. THE Politica_Elegibilidade_Experimental SHALL ser declarada no Config_File em um bloco
+   `experimental_eligibility` com versão própria (`eligibility_policy_version`); nenhum
+   critério de elegibilidade — incluindo o padrão/prefixo de placeholder de sigilo de
+   ACORDAO — SHALL ser embutido silenciosamente no código.
+4. THE SeletorExperimental SHALL considerar um documento **elegível** quando TODAS as
+   condições forem satisfeitas: (a) o campo textual ACORDAO não é nulo, vazio ou composto
+   apenas por espaços; (b) o valor de ACORDAO, após a normalização de elegibilidade
+   definida no Design, não corresponde apenas ao padrão/prefixo de placeholder de sigilo
+   declarado no Config_File; (c) o campo textual ASSUNTO não é nulo, vazio ou composto
+   apenas por espaços; (d) o valor de ASSUNTO não é exatamente o valor proibido declarado
+   (`SIGILOSO`).
+5. THE SeletorExperimental SHALL, para a decisão de elegibilidade de ACORDAO, poder remover
+   HTML e normalizar espaços **apenas em memória**; THE valor persistido no Parquet
+   experimental SHALL permanecer idêntico ao valor do Corpus_Canonico, sem qualquer
+   modificação (byte/logicamente inalterado).
+6. THE ausência de valor em qualquer campo de `metadata_fields` (COLEGIADO, RELATOR,
+   TIPOPROCESSO, DATASESSAO, ENTIDADE, UNIDADETECNICA) NÃO SHALL, por si só, tornar um
+   documento não elegível.
+7. THE Selecao_Experimental (Parquet) SHALL preservar exatamente as mesmas colunas, na
+   mesma ordem e com os mesmos valores do Corpus_Canonico para os documentos elegíveis;
+   THE SeletorExperimental SHALL NÃO acrescentar nenhuma coluna de elegibilidade nem
+   qualquer outra coluna ao Parquet experimental.
+8. THE SeletorExperimental SHALL preservar `doc_id` e `source_key` em todos os artefatos.
+9. WHEN a seleção conclui, THE SeletorExperimental SHALL produzir, por execução, exatamente
+   três artefatos em `data/processed/experimental/`: `selection_{batch_id}_{timestamp}.parquet`,
+   `selection_{batch_id}_{timestamp}_manifest.json` e
+   `selection_{batch_id}_{timestamp}_ineligible.jsonl`.
+10. THE arquivo `_ineligible.jsonl` SHALL ser sempre produzido, mesmo vazio, com um objeto
+    por documento não elegível contendo `doc_id`, `source_key` e `reasons` (lista de todos
+    os motivos aplicáveis em ordem determinística).
+11. THE manifesto `_manifest.json` SHALL registrar pelo menos: `source_parquet`,
+    `source_dataset_fingerprint`, `selection_fingerprint`, `config_version`,
+    `eligibility_policy_version`, `n_total`, `n_eligible`, `n_ineligible`, a política
+    aplicada e o `timestamp` (ISO 8601 UTC).
+12. THE SeletorExperimental SHALL garantir a reconciliação `n_eligible + n_ineligible =
+    n_total`, de modo que nenhum documento desapareça sem rastreio.
+13. THE SeletorExperimental SHALL calcular um `selection_fingerprint` determinístico sobre
+    o schema e o conteúdo ordenado do subconjunto elegível, independente de metadados
+    internos do Parquet; duas execuções sobre o mesmo Corpus_Canonico e a mesma política
+    SHALL produzir o mesmo `selection_fingerprint`.
+14. THE SeletorExperimental SHALL publicar os artefatos de forma atômica, produzindo-os
+    primeiro em área temporária sob `data/interim/` e movendo somente o conjunto completo
+    para `data/processed/experimental/`; IF a produção de qualquer artefato falhar, THEN
+    nenhum artefato parcial SHALL permanecer em `data/processed/experimental/`.
+15. IF já existir uma Selecao_Experimental em `data/processed/experimental/`, THEN THE
+    SeletorExperimental SHALL criar um novo conjunto com sufixo de timestamp sem
+    sobrescrever artefatos existentes.
+16. IF o Corpus_Canonico de entrada tiver zero documentos, THEN THE SeletorExperimental
+    SHALL produzir um Parquet experimental válido com zero linhas e as mesmas colunas, um
+    `_ineligible.jsonl` vazio e um manifesto com `n_total = n_eligible = n_ineligible = 0`,
+    sem encerrar com erro.

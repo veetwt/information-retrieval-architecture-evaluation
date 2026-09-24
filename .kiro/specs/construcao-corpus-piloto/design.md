@@ -133,8 +133,10 @@ class CorpusConfig(BaseModel):
     raw_dir: str = "data/raw"
     manifests_dir: str = "data/manifests"
     processed_dir: str = "data/processed/original"
+    experimental_dir: str = "data/processed/experimental"  # Selecao_Experimental
     reports_dir: str = "reports/corpus"
     fingerprint_log: str = "runs/artifacts/fingerprint_log.jsonl"
+    experimental_eligibility: dict | None = None  # Politica_Elegibilidade_Experimental
 
     # Validações cross-field (model_validator) — contrato:
     #   - metadata_fields deve ser subconjunto de allowed_fields (quando ambos não-nulos)
@@ -681,6 +683,81 @@ class Canonizador:
 
 ---
 
+### 3.7 SeletorExperimental — `src/data/seletor.py`
+
+**Responsabilidade:** Derivar do Corpus_Canonico a `Selecao_Experimental` — o subconjunto
+de documentos elegíveis segundo a `Politica_Elegibilidade_Experimental` declarada no
+Config_File — sem modificar nem sobrescrever o Corpus_Canonico. Lê o Parquet canônico e seu
+sidecar em modo somente leitura, valida que o `dataset_fingerprint` atual bate com o
+registrado no sidecar de origem, aplica a política de elegibilidade, calcula um
+`selection_fingerprint` próprio e publica atomicamente os três artefatos em
+`data/processed/experimental/`.
+
+O SeletorExperimental **não** faz chunking, concatenação de campos, geração de embeddings
+nem recuperação. Não infere, normaliza nem preenche valores persistidos.
+
+**Dependências diretas:** `CorpusConfig`, `compute_dataset_fingerprint`, `pandas`,
+`pyarrow`, `pathlib`, `datetime`, `re` (para a normalização de elegibilidade em memória).
+
+```python
+from pathlib import Path
+from dataclasses import dataclass, field
+
+@dataclass
+class SelectionResult:
+    parquet_path: Path
+    manifest_path: Path
+    ineligible_log_path: Path      # sempre produzido, mesmo vazio
+    n_total: int
+    n_eligible: int
+    n_ineligible: int
+    ineligible_log: list[dict]     # [{doc_id, source_key, reasons: [...]}] — em memória
+    selection_fingerprint: str
+    source_dataset_fingerprint: str
+    source_parquet: str
+
+class SeletorExperimental:
+    def __init__(self, config: CorpusConfig) -> None:
+        """Inicializa com a configuração do pipeline (inclui experimental_eligibility)."""
+        ...
+
+    def run(self, canonical_parquet_path: Path) -> SelectionResult:
+        """Executa a seleção experimental:
+        1. Localiza o sidecar '{parquet_stem}_metadata.json' do Corpus_Canonico.
+        2. Lê o Parquet canônico (somente leitura) preservando as colunas e valores.
+        3. Recalcula o dataset_fingerprint do DataFrame lido e compara ao
+           dataset_fingerprint do sidecar. Se divergir → FingerprintMismatchError;
+           nenhum artefato é produzido.
+        4. Valida que experimental_eligibility está declarado no Config_File; se não,
+           aborta com erro de configuração.
+        5. Para cada documento, aplica a Politica_Elegibilidade_Experimental (ver 6.11):
+           usa uma cópia normalizada APENAS EM MEMÓRIA de ACORDAO para a decisão; o valor
+           persistido permanece o original do canônico.
+        6. Constrói o subconjunto elegível preservando exatamente as mesmas colunas,
+           ordem e valores do canônico (sem coluna de elegibilidade adicional).
+        7. Registra cada documento não elegível em ineligible_log com doc_id, source_key
+           e reasons (lista determinística de todos os motivos aplicáveis).
+        8. Verifica reconciliação: n_eligible + n_ineligible == n_total.
+        9. Calcula selection_fingerprint sobre o subconjunto elegível.
+        10. Produz artefatos em data/interim/selection_{timestamp}/ e publica atomicamente
+            em data/processed/experimental/ (nunca sobrescreve; sufixo de timestamp).
+        Retorna SelectionResult."""
+        ...
+
+    def _normalize_for_eligibility(self, value: str | None) -> str:
+        """Normalização usada SOMENTE para a decisão de elegibilidade (em memória).
+        Ver a definição exata em Data Models 4.8 e na decisão 6.11.
+        Não altera o valor persistido."""
+        ...
+
+    def _evaluate_document(self, row) -> list[str]:
+        """Retorna a lista determinística de reasons de não-elegibilidade de um documento
+        (vazia se elegível). Ordem canônica dos reasons definida na decisão 6.11."""
+        ...
+```
+
+---
+
 ## Data Models
 
 ### 4.1 Schema do Config_File (`configs/corpus_config.yaml`)
@@ -886,6 +963,113 @@ Formato: JSON Lines (uma entrada por execução do Canonizador).
   "n_rejected": 3
 }
 ```
+
+---
+
+### 4.8 Bloco `experimental_eligibility` do Config_File
+
+Bloco opcional (default ausente → seleção experimental indisponível até ser declarado).
+Todos os critérios são explícitos; nada é embutido no código.
+
+```yaml
+experimental_eligibility:
+  eligibility_policy_version: "1.0"       # versão própria da política
+  required_text_fields:                   # devem ser não-nulos/não-vazios/não-só-espaços
+    - "ACORDAO"
+    - "ASSUNTO"
+  forbidden_exact_values:                 # valor exato proibido por campo (comparação literal)
+    ASSUNTO: ["SIGILOSO"]
+  sigilo_placeholder:                     # placeholder de sigilo de ACORDAO (declarado)
+    field: "ACORDAO"
+    match: "prefix"                       # "prefix" | "exact"
+    patterns:
+      - "Documento classificado como sigiloso"
+```
+
+Semântica:
+- `required_text_fields`: campos textuais que, se nulos/vazios/só-espaços, tornam o
+  documento não elegível (um reason por campo).
+- `forbidden_exact_values`: mapa campo → lista de valores exatos proibidos (comparação
+  literal, sem normalização) — usado para `ASSUNTO == "SIGILOSO"`.
+- `sigilo_placeholder`: declara o padrão de placeholder de sigilo de ACORDAO. `match:
+  prefix` compara se o **valor normalizado para elegibilidade** começa com algum dos
+  `patterns` (também normalizados); `match: exact` compara igualdade após normalização.
+
+---
+
+### 4.9 Normalização de elegibilidade (somente em memória)
+
+Aplicada **exclusivamente** para a decisão de elegibilidade; nunca ao valor persistido.
+Definição exata, nesta ordem:
+1. Se o valor for nulo (None/NaN) → tratado como string vazia para a decisão.
+2. Remoção de marcação HTML: substituir cada ocorrência da regex `<[^>]+>` por um espaço.
+3. Colapso de espaços em branco: `" ".join(valor.split())` (remove espaços de borda e
+   colapsa sequências de espaços/tabs/quebras em um único espaço).
+4. Sem alteração de caixa e sem remoção de acentos (a comparação de placeholder é feita
+   sobre o texto normalizado como acima; os `patterns` do Config_File passam pela mesma
+   normalização antes da comparação).
+
+Para `required_text_fields`, um campo é considerado "vazio para elegibilidade" quando a
+normalização (passos 1–3) resulta em string vazia.
+
+> O valor gravado no Parquet experimental é sempre o valor original do Corpus_Canonico,
+> byte/logicamente inalterado. A normalização acima existe apenas para decidir
+> elegibilidade.
+
+---
+
+### 4.10 Schema do Parquet da Selecao_Experimental
+
+Mesmas colunas, mesma ordem e mesmos valores do Corpus_Canonico (13 colunas na config
+atual):
+
+```
+doc_id, source_key, ASSUNTO, ACORDAO, COLEGIADO, RELATOR, TIPOPROCESSO,
+DATASESSAO, ENTIDADE, UNIDADETECNICA, SUMARIO, RELATORIO, VOTO
+```
+
+Nenhuma coluna de elegibilidade (ou qualquer outra) é adicionada. Contém apenas as linhas
+elegíveis.
+
+---
+
+### 4.11 Schema do Manifesto da Seleção (`selection_{batch_id}_{timestamp}_manifest.json`)
+
+```json
+{
+  "source_parquet": "corpus_tcu-acordaos-completo-2024-v1_20260922_221344.parquet",
+  "source_dataset_fingerprint": "4766bcff225eb0237833c7e48006278c91462ec35b52ea91768f4605b06c97a0",
+  "selection_fingerprint": "…64 hex…",
+  "config_version": "1.0",
+  "eligibility_policy_version": "1.0",
+  "n_total": 21661,
+  "n_eligible": 21631,
+  "n_ineligible": 30,
+  "eligibility_policy": {
+    "required_text_fields": ["ACORDAO", "ASSUNTO"],
+    "forbidden_exact_values": {"ASSUNTO": ["SIGILOSO"]},
+    "sigilo_placeholder": {"field": "ACORDAO", "match": "prefix",
+                           "patterns": ["Documento classificado como sigiloso"]}
+  },
+  "created_at": "2026-09-22T22:40:00Z"
+}
+```
+
+---
+
+### 4.12 Schema do Ineligible Log (`selection_{batch_id}_{timestamp}_ineligible.jsonl`)
+
+Formato: JSON Lines. Sempre produzido, mesmo vazio. Um objeto por documento não elegível.
+`reasons` é uma lista com todos os motivos aplicáveis, em ordem determinística
+(ver 6.11).
+
+```json
+{"doc_id": "tcu-abc123def456", "source_key": "ACORDAO-COMPLETO-1", "reasons": ["acordao_null_or_empty"]}
+{"doc_id": "tcu-0011223344ab", "source_key": "ACORDAO-COMPLETO-2", "reasons": ["assunto_forbidden_value", "acordao_sigilo_placeholder"]}
+```
+
+Vocabulário de reasons (ordem canônica): `acordao_null_or_empty`,
+`acordao_sigilo_placeholder`, `assunto_null_or_empty`, `assunto_forbidden_value`.
 
 ---
 
@@ -1100,6 +1284,56 @@ fixaria prematuramente uma estratégia de baseline.
 
 ---
 
+### 6.11 Seleção experimental como artefato derivado, reproduzível e não destrutivo
+
+A `Selecao_Experimental` é uma **camada derivada** do Corpus_Canonico, armazenada em
+`data/processed/experimental/`, distinta de `data/raw/`, `data/processed/original/` e
+`data/processed/enriched/`. O SeletorExperimental lê o canônico em modo somente leitura e
+nunca o modifica ou sobrescreve; documentos não elegíveis permanecem no canônico.
+
+**Política declarativa (não hardcoded):** todos os critérios de elegibilidade — inclusive o
+padrão/prefixo de placeholder de sigilo de ACORDAO — são declarados no bloco
+`experimental_eligibility` do Config_File, com `eligibility_policy_version` própria. Isso
+mantém a política explícita, versionada, reproduzível e auditável, coerente com as decisões
+6.6 e 6.9.
+
+**Normalização apenas para decisão:** a decisão de elegibilidade de ACORDAO usa uma cópia
+normalizada em memória (remoção de HTML + colapso de espaços, ver 4.9). O valor gravado no
+Parquet experimental é sempre o valor original do canônico, byte/logicamente inalterado.
+ASSUNTO = `SIGILOSO` é comparação de valor exato (sem normalização), conforme
+`forbidden_exact_values`.
+
+**Ordem canônica dos reasons** (determinística, para reprodutibilidade do
+`_ineligible.jsonl`):
+1. `acordao_null_or_empty`
+2. `acordao_sigilo_placeholder`
+3. `assunto_null_or_empty`
+4. `assunto_forbidden_value`
+
+Um documento pode acumular múltiplos reasons; todos são registrados nessa ordem.
+
+**Validação de fingerprint antes da seleção:** o SeletorExperimental recalcula o
+`dataset_fingerprint` do Parquet canônico lido e o compara ao valor do sidecar de origem;
+divergência aborta a operação sem produzir artefatos. Isso garante que a seleção sempre
+corresponde a uma versão íntegra e conhecida do canônico.
+
+**Dois fingerprints:** o manifesto registra o `source_dataset_fingerprint` (do canônico de
+origem, para rastreabilidade) e um `selection_fingerprint` próprio (calculado sobre o
+subconjunto elegível com `compute_dataset_fingerprint`, `sort_col="doc_id"`), garantindo
+reprodutibilidade e verificação independente da seleção.
+
+**Publicação atômica e não destrutiva:** artefatos são produzidos em
+`data/interim/selection_{timestamp}/` e movidos como conjunto para
+`data/processed/experimental/`; falha em qualquer artefato descarta o temporário sem deixar
+parciais no destino; nomes com timestamp evitam sobrescrita.
+
+Alternativa descartada: materializar a seleção adicionando uma coluna booleana de
+elegibilidade ao próprio Corpus_Canonico. Descartada porque violaria a imutabilidade do
+canônico e misturaria uma decisão experimental (versionável e revisável) com a
+representação canônica estável.
+
+---
+
 ### 6.7 Pydantic v2 para validação do Config_File
 
 Pydantic v2 oferece validação declarativa com mensagens de erro descritivas por campo,
@@ -1174,6 +1408,10 @@ tcc-recuperacao-informacao/
 │   │                                        (presente somente quando há pendências)
 │   ├── processed/
 │   │   ├── enriched/                    ← artefatos de enriquecimento (escopo futuro)
+│   │   ├── experimental/               ← Selecao_Experimental (derivada do canônico)
+│   │   │   ├── selection_{batch_id}_YYYYMMDD_HHMMSS.parquet         ← subconjunto elegível (mesmas 13 colunas)
+│   │   │   ├── selection_{batch_id}_YYYYMMDD_HHMMSS_manifest.json   ← política + fingerprints + contagens
+│   │   │   └── selection_{batch_id}_YYYYMMDD_HHMMSS_ineligible.jsonl ← não elegíveis (sempre; doc_id/source_key/reasons)
 │   │   └── original/
 │   │       ├── corpus_{batch_id}_YYYYMMDD_HHMMSS.parquet           ← Corpus_Canonico
 │   │       ├── corpus_{batch_id}_YYYYMMDD_HHMMSS_metadata.json     ← sidecar (inclui dataset_fingerprint)
