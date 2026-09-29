@@ -13,10 +13,15 @@ implementa limpeza de HTML, chunking, embeddings, índices, consultas, métricas
 execução técnica (código, índices, geração, métricas) poderá ser objeto de uma spec futura
 separada (por exemplo, `execucao-experimento`), que **não** é criada aqui.
 
-A variável central do experimento é a **arquitetura de recuperação**. As demais condições
-(universo documental, necessidades de informação, formulações, gerador, prompt, política de
-contexto e procedimento de avaliação) são mantidas constantes, quando aplicável, para
-isolar o efeito da arquitetura.
+O **fator central** do experimento é a **arquitetura de recuperação**. Além dele, a
+**natureza da necessidade de informação** e a **formulação da consulta** são **fatores
+experimentais [EM ESTUDO]** que podem variar deliberadamente no conjunto do experimento —
+ou seja, necessidades e formulações **não** permanecem constantes globalmente. O controle
+experimental é aplicado principalmente na **comparação pareada** entre arquiteturas para uma
+**mesma formulação**: nesse caso, a necessidade/formulação e as demais variáveis controladas
+(universo documental, gerador, prompt, política de contexto e procedimento de avaliação)
+permanecem constantes, e a arquitetura de recuperação é a diferença deliberada, isolando seu
+efeito.
 
 ### Convenção de status
 
@@ -47,13 +52,14 @@ Distinção conceitual central da unidade experimental (do mais abstrato ao mais
 - **Documento**: A unidade documental do corpus — um acórdão, identificado por `doc_id`.
 - **Chunk** (se houver): Um fragmento de um documento, caso a arquitetura vetorial venha a
   operar sobre fragmentos em vez do documento inteiro. A existência de chunks é **A DEFINIR**.
-- **Evidência recuperada**: Um item retornado por uma arquitetura de recuperação para uma
-  consulta (documento inteiro ou chunk), com sua posição (rank) e pontuação (score),
-  destinado a subsidiar a geração da resposta.
+- **Evidência recuperada**: Documento, chunk ou outra unidade aplicável retornada por uma
+  arquitetura de recuperação para uma consulta, podendo possuir posição (rank) e pontuação
+  (score) **quando aplicável** (a arquitetura estruturada pode não ter ranking/score
+  natural), destinada a subsidiar a geração da resposta.
 - **Resposta final**: O texto produzido pelo gerador a partir das evidências recuperadas,
   para uma dada consulta/necessidade.
 - **Arquitetura de recuperação**: O método pelo qual evidências são recuperadas —
-  estruturada, vetorial ou híbrida. É a variável central do experimento.
+  estruturada, vetorial ou híbrida. É o **fator central** do experimento.
 - **doc_id / source_key**: Identificadores herdados da spec `construcao-corpus-piloto`;
   `doc_id` é a unidade documental do experimento.
 
@@ -97,23 +103,23 @@ material documental.
    `DATASESSAO`, `ENTIDADE`, `UNIDADETECNICA`.
 3. **[DECIDIDO]** `SUMARIO`, `RELATORIO` e `VOTO` SHALL permanecer preservados no corpus,
    porém **fora** da baseline textual principal deste experimento.
-4. **[EM ESTUDO]** A forma de combinar `ASSUNTO` e `ACORDAO` na representação textual da
-   arquitetura vetorial ainda não está definida; NÃO SHALL haver concatenação decidida
-   nesta spec. Dependência: `análise do corpus`, `teste de viabilidade`, `literatura`.
+4. **[A DEFINIR]** A forma de combinar `ASSUNTO` e `ACORDAO` na representação vetorial ainda
+   não tem estratégia provisória consolidada; NÃO SHALL ser escolhida nesta spec nenhuma
+   alternativa (concatenação, prefixo, representação separada ou outra).
+   Dependência: `análise do corpus`, `teste de viabilidade`, `literatura`.
 
 ---
 
 ### Requirement 3: Arquiteturas comparadas
 
 **User Story:** Como pesquisador, quero definir as arquiteturas comparadas e o que as
-distingue, para isolar a arquitetura de recuperação como variável central.
+distingue, para tratar a arquitetura de recuperação como fator central do experimento.
 
 #### Acceptance Criteria
 
 1. **[DECIDIDO]** O experimento SHALL comparar três arquiteturas de recuperação:
    estruturada, vetorial e híbrida.
-2. **[DECIDIDO]** A arquitetura de recuperação SHALL ser a variável central (independente)
-   do experimento.
+2. **[DECIDIDO]** A arquitetura de recuperação SHALL ser o **fator central** do experimento.
 3. **[DECIDIDO]** "Estruturada" NÃO SHALL significar BM25 ou busca lexical/esparsa; refere-se
    a recuperação baseada em campos estruturados/metadados.
 4. **[DECIDIDO]** O experimento NÃO SHALL comparar LLMs entre si.
@@ -125,8 +131,12 @@ distingue, para isolar a arquitetura de recuperação como variável central.
    Dependência: `literatura`, `teste de viabilidade`, `controle experimental`.
 7. **[DECIDIDO]** Cada formulação incluída no núcleo comparativo do experimento SHALL ser
    submetida, **sem alteração de conteúdo**, às três arquiteturas (estruturada, vetorial,
-   híbrida). A diferença entre as condições comparadas SHALL vir exclusivamente da
-   arquitetura de recuperação, não da entrada.
+   híbrida). Na **comparação pareada de uma mesma formulação**, a diferença deliberada entre
+   as condições SHALL ser a arquitetura de recuperação, mantendo-se constantes a
+   formulação/necessidade e as demais variáveis controladas. Isso NÃO significa que a
+   arquitetura seja o único fator que varia no experimento completo: a natureza da
+   necessidade e a formulação também são fatores experimentais **[EM ESTUDO]** que variam
+   entre necessidades/formulações.
 8. **[DECIDIDO]** A diversidade experimental SHALL vir das diferentes necessidades de
    informação e das diferentes formulações, e NÃO de atribuir previamente perguntas
    exclusivas a uma arquitetura.
@@ -235,9 +245,10 @@ distinguir erro de recuperação de erro de geração.
 1. **[DECIDIDO]** A recuperação intermediária SHALL ser registrada para cada consulta e
    arquitetura, de forma auditável.
 2. **[EM ESTUDO]** O registro previsto PODERÁ conter campos como: `query_id`, `architecture`,
-   `doc_id`, `chunk_id` (se aplicável), `rank`, `score`, evidência e contexto enviado ao
-   gerador. O schema NÃO SHALL ser congelado nesta spec. Dependência: `controle experimental`,
-   `teste de viabilidade`.
+   `doc_id`, `chunk_id` (se aplicável), `rank` (quando aplicável), `score` (quando
+   aplicável), evidência e contexto enviado ao gerador. Nem toda arquitetura possui
+   rank/score natural (ex.: a estruturada pode não ter). O schema NÃO SHALL ser congelado
+   nesta spec. Dependência: `controle experimental`, `teste de viabilidade`.
 3. **[DECIDIDO]** O objetivo do registro SHALL ser permitir separar falhas de recuperação de
    falhas de geração na análise dos resultados.
 
@@ -285,8 +296,11 @@ definir, para escolher a avaliação com fundamentação.
 
 ### Requirement 11: Variáveis controladas
 
-**User Story:** Como pesquisador, quero manter constantes as variáveis não centrais, para que
-diferenças de resultado sejam atribuíveis à arquitetura de recuperação.
+**User Story:** Como pesquisador, quero manter constantes as variáveis controladas na
+comparação pareada entre arquiteturas para uma mesma formulação, para que, nesse pareamento,
+diferenças de resultado sejam atribuíveis à arquitetura de recuperação — sem exigir que
+necessidades e formulações permaneçam constantes no conjunto do experimento, já que são
+fatores experimentais EM ESTUDO.
 
 #### Acceptance Criteria
 

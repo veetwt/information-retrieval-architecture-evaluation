@@ -57,7 +57,8 @@ Leitura do fluxo:
 - Cada formulação do núcleo comparativo é submetida, **sem alteração de conteúdo**, às três
   **arquiteturas** (processadas em paralelo). A natureza da necessidade (estruturada,
   textual ou mista) **não** restringe a quais arquiteturas a formulação é submetida.
-- Cada arquitetura retorna **evidências recuperadas** (documentos ou chunks, com rank/score).
+- Cada arquitetura retorna **evidências recuperadas** (documento, chunk ou outra unidade
+  aplicável, podendo possuir rank/score quando aplicável).
 - As evidências alimentam o **mesmo gerador** (mesmo prompt/parâmetros/política de contexto),
   que produz a **resposta final**.
 - A **avaliação** ocorre em dois níveis: recuperação (evidências) e resposta final.
@@ -73,7 +74,7 @@ ilustrativos e **não** congelados):
 Necessidade de informação (information_need)
   └─ Formulação (formulation)  — direta | parafraseada | prolixa  [EM ESTUDO]
        └─ Consulta (query) submetida a uma Arquitetura
-            └─ Evidência recuperada (documento inteiro ou chunk, rank, score)
+            └─ Evidência recuperada (documento, chunk ou outra unidade; rank/score quando aplicável)
                  └─ Contexto → Gerador → Resposta final
 ```
 
@@ -84,7 +85,7 @@ Necessidade de informação (information_need)
 | Consulta (query) | Expressão concreta submetida a uma arquitetura | [DECIDIDO] papel |
 | Documento | Acórdão, unidade = `doc_id` | [DECIDIDO] |
 | Chunk | Fragmento de documento, se a vetorial operar por fragmentos | [A DEFINIR] existência |
-| Evidência recuperada | Item retornado (doc/chunk) com rank e score | [DECIDIDO] papel; [EM ESTUDO] schema de registro |
+| Evidência recuperada | Documento, chunk ou outra unidade aplicável; rank/score quando aplicável (a estruturada pode não ter ranking/score natural) | [DECIDIDO] papel; [EM ESTUDO] schema de registro |
 | Resposta final | Texto gerado a partir das evidências | [DECIDIDO] papel |
 
 > A distinção **necessidade ≠ consulta ≠ formulação ≠ documento ≠ chunk ≠ evidência ≠
@@ -213,8 +214,10 @@ Necessidade de informação (information_need)
   auditável, com o objetivo de **separar erro de recuperação de erro de geração**.
 
 **[EM ESTUDO]** — schema não congelado; campos previstos (ilustrativos):
-`query_id`, `architecture`, `doc_id`, `chunk_id` (se aplicável), `rank`, `score`, evidência,
-contexto enviado ao gerador. [`controle experimental`, `teste de viabilidade`]
+`query_id`, `architecture`, `doc_id`, `chunk_id` (se aplicável), `rank` (quando aplicável),
+`score` (quando aplicável), evidência, contexto enviado ao gerador. Nem toda arquitetura tem
+rank/score natural (ex.: a estruturada pode não ter). [`controle experimental`,
+`teste de viabilidade`]
 
 ---
 
@@ -271,7 +274,8 @@ contexto enviado ao gerador. [`controle experimental`, `teste de viabilidade`]
 |---|---|---|
 | Domínio (acórdãos TCU), recorte 2024 | DECIDIDO | — |
 | Corpus 21.661 / Seleção 21.631 / mesmos `doc_id` | DECIDIDO | — |
-| Unidade = acórdão / `doc_id`; avaliação por necessidade | DECIDIDO | — |
+| Unidade documental = acórdão / `doc_id` | DECIDIDO | — |
+| Unidade experimental / organização da avaliação = necessidade de informação | DECIDIDO | — |
 | Campos textuais principais: ASSUNTO, ACORDAO | DECIDIDO | — |
 | Metadados disponíveis (6 campos) | DECIDIDO | — |
 | SUMARIO/RELATORIO/VOTO preservados, fora da baseline | DECIDIDO | — |
@@ -288,7 +292,7 @@ contexto enviado ao gerador. [`controle experimental`, `teste de viabilidade`]
 | Distinção referência documental × referência da resposta | DECIDIDO | — |
 | Tipologia de necessidades (estruturada/textual/mista) | EM ESTUDO | literatura, análise do corpus |
 | Tipologia de formulações (direta/parafraseada/prolixa) | EM ESTUDO | literatura, controle experimental |
-| Combinação ASSUNTO+ACORDAO | EM ESTUDO/A DEFINIR | análise do corpus, teste de viabilidade, literatura |
+| Combinação ASSUNTO+ACORDAO na representação vetorial | A DEFINIR | análise do corpus, teste de viabilidade, literatura |
 | Schema do registro intermediário | EM ESTUDO | controle experimental, teste de viabilidade |
 | Métricas de recuperação (P@k, R@k, nDCG@k) e k | EM ESTUDO | literatura, controle experimental |
 | Estratégia exata da híbrida | A DEFINIR | literatura, teste de viabilidade, controle experimental |
