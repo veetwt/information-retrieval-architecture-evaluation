@@ -1,0 +1,77 @@
+# Modelo (template) de Ficha de Invariantes de uma necessidade de informação.
+# NÃO é uma necessidade real: os campos trazem placeholders e comentários de
+# orientação. Copie este arquivo para `NI-XXX.yaml` e preencha.
+#
+# Regras (spec protocolo-experimental, Requirement 5):
+# - A ficha é criada ANTES da execução dos recuperadores.
+# - A ficha NÃO é o gold/reference e NÃO é fornecida aos recuperadores.
+# - As condições obrigatórias são DESCRITIVAS e apenas anotadas como relativas a
+#   metadados ou a texto; não são filtros executáveis.
+# - A equivalência das formulações é decidida por revisão humana e apenas
+#   REGISTRADA aqui; o validador estrutural não julga equivalência semântica.
+
+schema_version: "1.0"
+
+# Identificador único e estável da necessidade. Padrão obrigatório: ^NI-[0-9]{3}$
+# (ex.: NI-001). NI-000 é reservado como placeholder deste template (não é uma
+# necessidade real). Os pilotos NI-01/02/03 permanecem apenas em docs/.
+need_id: "NI-000"
+
+# Descrição da necessidade de informação, em linguagem natural.
+description: "<descreva a necessidade de informação>"
+
+# Natureza da necessidade: metadata | textual | mixed
+nature: "metadata"
+
+# Escopo documental e temporal.
+scope:
+  corpus: "tcu-acordaos-completo-2024-v1"   # identificação da seleção congelada
+  temporal: "2024"
+  # SHA-256 (64 hex) da Selecao_Experimental congelada, igual ao manifesto
+  # (selection_*_manifest.json, campo selection_fingerprint). O valor abaixo é o
+  # da seleção atual de 21.631 documentos.
+  selection_fingerprint: "ec125709322854d164e8f4aeaffb0351ef92e0adfede4d92b17b955b5ea1bc5c"
+
+# Condições obrigatórias que delimitam os documentos pertinentes.
+# PODE ser uma lista vazia ([]). Uma necessidade baseada em metadados pode não ter
+# condição documental explícita (ex.: contagem agrupada por colegiado).
+# Cada condição é DESCRITIVA e anotada por `relates_to`: metadata | textual.
+# `fields` é opcional e só se aplica quando relates_to == metadata; restrito aos
+# seis campos permitidos: COLEGIADO, RELATOR, TIPOPROCESSO, DATASESSAO, ENTIDADE,
+# UNIDADETECNICA.
+mandatory_conditions:
+  - description: "<condição descritiva; ex.: restrita ao colegiado Plenário>"
+    relates_to: "metadata"
+    fields: ["COLEGIADO"]
+  - description: "<condição descritiva ancorada no conteúdo textual>"
+    relates_to: "textual"
+    # fields omitido para condições textuais
+
+# Informações/fatos que a resposta deve conter.
+requested_facts:
+  - "<fato solicitado 1>"
+  - "<fato solicitado 2>"
+
+# Operações necessárias, quando aplicáveis. Vocabulário-guia (não obrigatório ainda):
+# identify, count, list, extract, compare, summarize. Descreve o RESULTADO solicitado,
+# não o funcionamento dos recuperadores.
+operations:
+  - "<operação, se aplicável>"
+
+# As três condições de formulação (Requirement 5).
+# Em ficha 'draft' podem estar incompletas; em 'validated' devem estar preenchidas.
+formulations:
+  direct: "<formulação direta — objetiva e concisa>"
+  paraphrase: "<formulação parafraseada — extensão semelhante à direta>"
+  verbose: "<formulação prolixa — mais extensa, sem novos fatos nem pistas da resposta>"
+
+# Estado e registro da validação de equivalência.
+# status: draft | validated
+# Para 'validated': formulações preenchidas, requested_facts não vazio,
+# rationale preenchido e ao menos um revisor registrado.
+equivalence_validation:
+  status: "draft"
+  rationale: ""
+  reviewers: []
+    # - id: "rev1"
+    #   decision: "equivalent"

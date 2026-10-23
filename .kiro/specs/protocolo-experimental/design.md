@@ -17,8 +17,9 @@ Na comparação pareada de uma **mesma formulação** entre arquiteturas, a arqu
 gerador/prompt/parâmetros, política de contexto, avaliação), de modo que diferenças na
 resposta final sejam atribuíveis à recuperação — e, com o registro da recuperação
 intermediária, possa-se separar erro de recuperação de erro de geração. Além do fator
-central, o experimento também pretende estudar variação em dois **fatores experimentais**
-ainda **[EM ESTUDO]**: a natureza da necessidade de informação e a formulação da consulta.
+central, o experimento também estuda variação em dois **fatores experimentais**: a natureza
+da necessidade de informação (tipologia **[DECIDIDO]**: metadados/textual/mista) e a
+formulação da consulta (tipologia **[DECIDIDO]**: direta/parafraseada/prolixa).
 
 > **Convenção de status:** cada bloco relevante marca **[DECIDIDO]**, **[EM ESTUDO]**,
 > **[A DEFINIR]** ou **[OBSERVADO]** (resultado empírico já medido, que não representa
@@ -71,8 +72,8 @@ Hierarquia da unidade experimental (não é schema de implementação; nomes de 
 ilustrativos e **não** congelados):
 
 ```
-Necessidade de informação (information_need)
-  └─ Formulação (formulation)  — direta | parafraseada | prolixa  [EM ESTUDO]
+Necessidade de informação (information_need)  — natureza: metadados | textual | mista  [DECIDIDO]
+  └─ Formulação (formulation)  — direta | parafraseada | prolixa  [DECIDIDO]
        └─ Consulta (query) submetida a uma Arquitetura
             └─ Evidência recuperada (documento, chunk ou outra unidade; rank/score quando aplicável)
                  └─ Contexto → Gerador → Resposta final
@@ -80,8 +81,8 @@ Necessidade de informação (information_need)
 
 | Entidade | Definição | Status |
 |---|---|---|
-| Necessidade de informação | Demanda informacional de alto nível; unidade de organização da avaliação | [DECIDIDO] existência; [EM ESTUDO] tipologia |
-| Formulação | Variante de consulta que expressa a mesma necessidade | [DECIDIDO] existência; [EM ESTUDO] tipologia e critérios de equivalência |
+| Necessidade de informação | Demanda informacional de alto nível; unidade de organização da avaliação | [DECIDIDO] existência; [DECIDIDO] tipologia (metadados/textual/mista) |
+| Formulação | Variante de consulta que expressa a mesma necessidade | [DECIDIDO] existência, condições (direta/parafraseada/prolixa) e regras de equivalência |
 | Consulta (query) | Expressão concreta submetida a uma arquitetura | [DECIDIDO] papel |
 | Documento | Acórdão, unidade = `doc_id` | [DECIDIDO] |
 | Chunk | Fragmento de documento, se a vetorial operar por fragmentos | [A DEFINIR] existência |
@@ -98,10 +99,10 @@ Necessidade de informação (information_need)
 
 - **Fator central [DECIDIDO]:** a arquitetura de recuperação (estruturada, vetorial,
   híbrida). É o fator cujo efeito o experimento busca isolar na comparação pareada.
-- **Fatores experimentais [EM ESTUDO]:** a **natureza da necessidade de informação** e a
-  **formulação da consulta**. O experimento pretende estudar sua variação; ambas as
-  classificações permanecem EM ESTUDO e não são congeladas.
-  Dependência: `literatura`, `análise do corpus`, `controle experimental`.
+- **Fatores experimentais:** a **natureza da necessidade de informação** e a **formulação
+  da consulta**, ambas variando deliberadamente entre casos. As **tipologias** da natureza da
+  necessidade (metadados/textual/mista) e das formulações (direta/parafraseada/prolixa) estão
+  **[DECIDIDO]** (ver Requirement 5); os **valores** variam entre casos.
 - **Variáveis controladas (constantes quando aplicável) [DECIDIDO]:** gerador, prompt,
   política de contexto, universo documental (os 21.631 `doc_id`) e procedimento de
   avaliação, além das demais condições aplicáveis.
@@ -179,16 +180,54 @@ Necessidade de informação (information_need)
 **[DECIDIDO]**
 - A unidade experimental é organizada por **necessidade de informação**; cada necessidade
   admite múltiplas **formulações** equivalentes.
+- A **natureza das necessidades** tem três categorias operacionais (ver Requirement 5):
+  - **Baseada em metadados:** satisfatível exclusivamente por operações sobre atributos
+    documentais (seleção, contagem, identificação, agregação), sem interpretação textual.
+  - **Textual:** exige informação do conteúdo dos documentos, sem condição estruturada
+    obrigatória para definir os documentos pertinentes.
+  - **Mista:** tem ao menos uma condição estruturada obrigatória para delimitar os
+    documentos pertinentes e exige informação obtida/interpretada no conteúdo textual.
+- Regras da classificação (ver Requirement 5 para o enunciado normativo completo):
+  considera informações solicitadas **e** condições de pertinência; ocorre **antes** da
+  recuperação e não depende de seus resultados; informação de fonte dupla (metadados **e**
+  texto) não caracteriza mista por si só; uma condição documental obrigatória pode tornar a
+  necessidade mista ainda que a resposta final seja textual; a quantidade de documentos
+  relevantes é atributo **ortogonal** (não é categoria); natureza e formulação são dimensões
+  distintas; todas as formulações vão às três arquiteturas, sem direcionamento por categoria;
+  NI-01/NI-02/NI-03 permanecem exploratórios; as categorias são **operacionais** desta
+  pesquisa, fundamentadas na literatura, e não constituem taxonomia atribuível aos autores
+  citados.
 
-**[EM ESTUDO]** (hipóteses provisórias, não congeladas)
-- Natureza das necessidades: estruturada/metadados, textual/semântica, mista.
-  [`literatura`, `análise do corpus`]
-- Tipologia de formulações: direta, parafraseada, prolixa.
-  [`literatura`, `controle experimental`]
+- **Condições de formulação** (ver Requirement 5), categorias operacionais desta pesquisa,
+  **não** atribuíveis a Bailey et al. (2016) nem a Hagen, Scells e Potthast (2024):
+  - **Direta:** expressão objetiva e concisa; formulação de referência.
+  - **Parafraseada:** reescrita lexical/sintática preservando o significado, com extensão
+    aproximadamente semelhante à direta.
+  - **Prolixa:** mais extensa (explicações, redundâncias), sem acrescentar condições, fatos
+    solicitados ou pistas que revelem a resposta.
+  - Formulações **ruidosas** ficam **fora** do núcleo experimental neste momento.
+- **Ficha de invariantes** (ver Requirement 5): cada necessidade tem uma ficha criada
+  **antes** da recuperação, com id, descrição, natureza, escopo documental/temporal,
+  condições obrigatórias, fatos solicitados, operações exigidas, as três formulações e o
+  estado/justificativa da validação de equivalência. A ficha documenta a necessidade; **não**
+  substitui o gold.
+- **Regras de equivalência:** as três formulações preservam (1) a necessidade, (2) o escopo
+  documental/temporal, (3) as condições obrigatórias, (4) os fatos solicitados e (5) as
+  operações necessárias. É proibido introduzir fatos que modifiquem a necessidade, antecipem
+  a resposta ou revelem identificadores do documento-alvo ausentes na necessidade original.
+  Sinônimos e reformulações lexicais legítimas são permitidos (a variação faz parte do objeto
+  de estudo). A equivalência é revisada e registrada **antes** da execução; segunda revisão
+  independente é **desejável**.
 
-**[A DEFINIR]**
-- Critérios objetivos de equivalência semântica entre formulações da mesma necessidade.
-  [`literatura`, `controle experimental`]
+**[DECIDIDO]** — armazenamento e identificação (ver Requirement 5)
+- Fichas em **YAML**, **um arquivo por necessidade**, em `evaluation/questions/needs/`,
+  validadas por modelo Pydantic (`NeedSheet`). Gold/julgamentos ficam em
+  `evaluation/reference/` (separados da ficha).
+- `need_id` das fichas definitivas segue `^NI-[0-9]{3}$` (ex.: `NI-001`); os pilotos
+  `NI-01/02/03` permanecem só em `docs/experimento/`.
+- Vínculo ao corpus congelado por `scope.selection_fingerprint` (= manifesto da seleção).
+  Validação estrutural checa presença/formato (SHA-256 64 hex); a conferência
+  ficha×manifesto×corpus é **separada**, sem recalcular o fingerprint em cada leitura.
 
 ---
 
@@ -288,10 +327,15 @@ rank/score natural (ex.: a estruturada pode não ter). [`controle experimental`,
 | Registrar recuperação intermediária (objetivo) | DECIDIDO | — |
 | Variáveis controladas constantes (gerador, prompt, contexto, universo, avaliação) | DECIDIDO | — |
 | Comparação pareada: arquitetura é o único fator alterado p/ mesma formulação | DECIDIDO | — |
-| Fatores experimentais: natureza da necessidade e formulação (variam, em estudo) | EM ESTUDO | literatura, análise do corpus, controle experimental |
+| Fatores experimentais: natureza da necessidade e formulação (tipologias decididas; valores variam entre casos) | DECIDIDO | — |
 | Distinção referência documental × referência da resposta | DECIDIDO | — |
-| Tipologia de necessidades (estruturada/textual/mista) | EM ESTUDO | literatura, análise do corpus |
-| Tipologia de formulações (direta/parafraseada/prolixa) | EM ESTUDO | literatura, controle experimental |
+| Tipologia de necessidades (baseada em metadados / textual / mista) + 9 regras de classificação | DECIDIDO | — |
+| Condições de formulação (direta/parafraseada/prolixa); sem ruidosa no núcleo | DECIDIDO | — |
+| Ficha de invariantes por necessidade (criada antes da recuperação; não é o gold) | DECIDIDO | — |
+| Regras de equivalência entre formulações + validação prévia (2ª revisão desejável) | DECIDIDO | — |
+| Fichas em YAML (1 por necessidade) em evaluation/questions/needs/, validadas por Pydantic (NeedSheet); gold em evaluation/reference/ | DECIDIDO | — |
+| need_id definitivo `^NI-[0-9]{3}$` (pilotos NI-01/02/03 só em docs/) | DECIDIDO | — |
+| Vínculo ao corpus via scope.selection_fingerprint; conferência ao manifesto é validação separada | DECIDIDO | — |
 | Combinação ASSUNTO+ACORDAO na representação vetorial | A DEFINIR | análise do corpus, teste de viabilidade, literatura |
 | Schema do registro intermediário | EM ESTUDO | controle experimental, teste de viabilidade |
 | Métricas de recuperação (P@k, R@k, nDCG@k) e k | EM ESTUDO | literatura, controle experimental |

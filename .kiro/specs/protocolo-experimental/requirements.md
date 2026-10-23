@@ -15,8 +15,10 @@ separada (por exemplo, `execucao-experimento`), que **não** é criada aqui.
 
 O **fator central** do experimento é a **arquitetura de recuperação**. Além dele, a
 **natureza da necessidade de informação** e a **formulação da consulta** são **fatores
-experimentais [EM ESTUDO]** que podem variar deliberadamente no conjunto do experimento —
-ou seja, necessidades e formulações **não** permanecem constantes globalmente. O controle
+experimentais** que variam deliberadamente no conjunto do experimento — ou seja,
+necessidades e formulações **não** permanecem constantes globalmente. A **tipologia da
+natureza da necessidade** (metadados/textual/mista) e a **tipologia de formulações**
+(direta/parafraseada/prolixa) estão **[DECIDIDO]** (ver Requirement 5). O controle
 experimental é aplicado principalmente na **comparação pareada** entre arquiteturas para uma
 **mesma formulação**: nesse caso, a necessidade/formulação e as demais variáveis controladas
 (universo documental, gerador, prompt, política de contexto e procedimento de avaliação)
@@ -135,7 +137,7 @@ distingue, para tratar a arquitetura de recuperação como fator central do expe
    as condições SHALL ser a arquitetura de recuperação, mantendo-se constantes a
    formulação/necessidade e as demais variáveis controladas. Isso NÃO significa que a
    arquitetura seja o único fator que varia no experimento completo: a natureza da
-   necessidade e a formulação também são fatores experimentais **[EM ESTUDO]** que variam
+   necessidade e a formulação também são fatores experimentais que variam
    entre necessidades/formulações.
 8. **[DECIDIDO]** A diversidade experimental SHALL vir das diferentes necessidades de
    informação e das diferentes formulações, e NÃO de atribuir previamente perguntas
@@ -174,20 +176,90 @@ de expressão.
 
 1. **[DECIDIDO]** Cada necessidade de informação SHALL poder ter múltiplas formulações
    equivalentes, que compartilham a mesma necessidade de origem.
-2. **[EM ESTUDO]** A natureza/tipologia das necessidades de informação — hipótese
-   provisória: **estruturada/metadados**, **textual/semântica**, **mista** — ainda não está
-   consolidada; nomes e categorias NÃO SHALL ser congelados sem fundamentação.
-   Dependência: `literatura`, `análise do corpus`.
-   Independentemente de uma necessidade ser predominantemente estruturada, textual ou mista,
-   sua(s) formulação(ões) do núcleo comparativo SHALL ser executada(s) nas três arquiteturas
-   (ver Requirement 3.7); a natureza da necessidade **não** restringe a quais arquiteturas
-   ela é submetida.
-3. **[EM ESTUDO]** A tipologia de formulações — hipótese provisória: **direta**,
-   **parafraseada**, **prolixa** — ainda não está consolidada; NÃO SHALL ser congelada sem
-   fundamentação e sem critérios objetivos de equivalência semântica.
-   Dependência: `literatura`, `controle experimental`.
-4. **[A DEFINIR]** Os critérios objetivos de equivalência semântica entre formulações ainda
-   não estão definidos. Dependência: `literatura`, `controle experimental`.
+2. **[DECIDIDO]** A tipologia da **natureza das necessidades de informação** SHALL ser
+   composta por três categorias operacionais: **baseada em metadados**, **textual** e
+   **mista**, definidas como segue.
+   - **Necessidade baseada em metadados:** pode ser satisfeita exclusivamente por operações
+     sobre atributos documentais (metadados) — incluindo seleção, contagem, identificação e
+     agregação — sem exigir interpretação do conteúdo textual.
+   - **Necessidade textual:** exige informações presentes no conteúdo dos documentos, sem
+     uma condição estruturada obrigatória para definir quais documentos são pertinentes.
+   - **Necessidade mista:** estabelece pelo menos uma condição estruturada obrigatória para
+     delimitar os documentos pertinentes e exige informações obtidas ou interpretadas no
+     conteúdo textual.
+3. **[DECIDIDO]** A classificação da natureza da necessidade SHALL observar as seguintes
+   regras metodológicas:
+   1. A classificação SHALL considerar tanto as informações solicitadas quanto as condições
+      que determinam quais documentos são pertinentes.
+   2. A classificação SHALL ocorrer antes da execução dos recuperadores e NÃO SHALL depender
+      de seus resultados.
+   3. Uma informação presente simultaneamente em metadados e no texto NÃO SHALL, por si só,
+      caracterizar uma necessidade mista.
+   4. Uma condição documental obrigatória PODE caracterizar uma necessidade mista mesmo
+      quando a resposta final contém apenas informações textuais.
+   5. A quantidade de documentos relevantes SHALL ser uma característica separada da natureza
+      da necessidade (atributo ortogonal; não é uma categoria).
+   6. A natureza da necessidade e a formulação da consulta SHALL ser tratadas como dimensões
+      distintas.
+   7. Todas as formulações SHALL ser submetidas às três arquiteturas, sem direcionamento por
+      categoria (ver Requirement 3.7).
+   8. Os casos NI-01, NI-02 e NI-03 SHALL permanecer exploratórios e NÃO SHALL constituir o
+      gabarito definitivo.
+   9. As três categorias SHALL ser tratadas como categorias operacionais desta pesquisa,
+      fundamentadas em conceitos da literatura, e NÃO SHALL ser atribuídas como taxonomia
+      original aos autores citados.
+4. **[DECIDIDO]** Cada necessidade de informação do núcleo comparativo SHALL ter três
+   **condições de formulação** operacionais:
+   - **Direta:** expressão objetiva e concisa da necessidade, usada como formulação de
+     referência.
+   - **Parafraseada:** reformulação lexical ou sintática da necessidade, preservando seu
+     significado e mantendo extensão aproximadamente semelhante à formulação direta.
+   - **Prolixa:** formulação mais extensa da mesma necessidade, com explicações, redundâncias
+     ou construções linguísticas adicionais, sem acrescentar novas condições, fatos
+     solicitados ou informações que revelem a resposta.
+5. **[DECIDIDO]** Formulações **ruidosas** (ex.: com erros de digitação) NÃO SHALL integrar o
+   núcleo experimental neste momento.
+6. **[DECIDIDO]** As três condições de formulação SHALL ser categorias operacionais desta
+   pesquisa e NÃO SHALL ser atribuídas como classificações propostas originalmente por
+   Bailey et al. (2016) ou Hagen, Scells e Potthast (2024).
+7. **[DECIDIDO]** Cada necessidade de informação SHALL possuir uma **ficha de invariantes**
+   própria, criada **antes** da execução dos recuperadores, contendo ao menos:
+   - identificador único da necessidade;
+   - descrição da necessidade de informação;
+   - natureza (baseada em metadados, textual ou mista);
+   - escopo documental e temporal;
+   - condições documentais obrigatórias;
+   - informações e fatos solicitados;
+   - operações exigidas, quando aplicáveis (identificar, contar, comparar, agregar);
+   - as três formulações (direta, parafraseada, prolixa);
+   - estado e justificativa da validação de equivalência.
+   A ficha documenta a necessidade e suas formulações e NÃO SHALL substituir o conjunto de
+   referência (gold), que posteriormente registrará documentos relevantes, evidências e
+   respostas esperadas (ver Requirement 9).
+8. **[DECIDIDO]** As três formulações de uma mesma necessidade SHALL preservar: (1) a mesma
+   necessidade de informação; (2) o mesmo escopo documental e temporal; (3) as mesmas
+   condições obrigatórias; (4) os mesmos fatos solicitados; (5) as mesmas operações
+   necessárias para responder.
+9. **[DECIDIDO]** Uma formulação NÃO SHALL introduzir fatos adicionais que modifiquem a
+   necessidade, antecipem a resposta ou revelem identificadores dos documentos-alvo que não
+   faziam parte da necessidade original. Sinônimos e reformulações lexicais legítimas SHALL
+   ser permitidos, ainda que possam alterar o desempenho da recuperação, pois essa variação
+   faz parte do objeto da pesquisa.
+10. **[DECIDIDO]** A equivalência entre formulações SHALL ser revisada e registrada **antes**
+    da execução das arquiteturas. Uma segunda revisão independente é **desejável**, conforme
+    a viabilidade do projeto.
+11. **[DECIDIDO]** As fichas de invariantes SHALL ser armazenadas em **YAML**, **um arquivo
+    por necessidade**, no diretório `evaluation/questions/needs/`, e validadas
+    estruturalmente por um modelo Pydantic (`NeedSheet`). Gold e julgamentos de relevância
+    SHALL residir separadamente em `evaluation/reference/`.
+12. **[DECIDIDO]** O identificador das fichas definitivas SHALL seguir o padrão
+    `^NI-[0-9]{3}$` (ex.: `NI-001`). Os casos piloto `NI-01`/`NI-02`/`NI-03` SHALL permanecer
+    apenas em `docs/experimento/` e NÃO são fichas definitivas.
+13. **[DECIDIDO]** A ficha SHALL vincular-se à Selecao_Experimental congelada por
+    `scope.selection_fingerprint`, igual ao `selection_fingerprint` registrado no manifesto
+    da seleção. A validação estrutural SHALL verificar apenas presença e formato (SHA-256 de
+    64 hex); a conferência entre ficha, manifesto e corpus SHALL ser uma validação
+    **separada**, sem recalcular o fingerprint a cada leitura individual de ficha.
 
 ---
 
@@ -300,15 +372,17 @@ definir, para escolher a avaliação com fundamentação.
 comparação pareada entre arquiteturas para uma mesma formulação, para que, nesse pareamento,
 diferenças de resultado sejam atribuíveis à arquitetura de recuperação — sem exigir que
 necessidades e formulações permaneçam constantes no conjunto do experimento, já que são
-fatores experimentais EM ESTUDO.
+fatores experimentais que variam entre casos.
 
 #### Acceptance Criteria
 
 1. **[DECIDIDO]** A arquitetura de recuperação SHALL ser o **fator central** do experimento.
-2. **[EM ESTUDO]** Além do fator central, o experimento pretende estudar variação em dois
-   **fatores experimentais**: a **natureza da necessidade de informação** e a **formulação
-   da consulta**. Ambas as classificações permanecem EM ESTUDO e NÃO SHALL ser congeladas.
-   Dependência: `literatura`, `análise do corpus`, `controle experimental`.
+2. **[DECIDIDO]** Além do fator central, o experimento estuda variação em dois **fatores
+   experimentais**: a **natureza da necessidade de informação** e a **formulação da
+   consulta**, que variam deliberadamente entre casos. As **tipologias** da natureza da
+   necessidade (metadados/textual/mista) e das formulações (direta/parafraseada/prolixa)
+   estão **[DECIDIDO]** (ver Requirement 5); os **valores** de necessidade e formulação
+   variam entre casos e não são constantes globalmente.
 3. **[DECIDIDO]** As **variáveis controladas** — mantidas constantes, quando aplicável —
    SHALL incluir: o gerador, o prompt, a política de contexto, o universo documental
    (21.631 `doc_id`) e o procedimento de avaliação, além das demais condições aplicáveis.
