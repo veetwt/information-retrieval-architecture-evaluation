@@ -1,0 +1,52 @@
+schema_version: "1.0"
+
+# PROVA DE CONCEITO (draft). Necessidade baseada em metadados — identificação.
+# Alvo documental de origem: doc_id tcu-b8b9f99c805c (ACORDAO-COMPLETO-2641518).
+need_id: "NI-001"
+
+description: >-
+  Em uma denúncia relativa à Administração Regional do Sesc no Mato Grosso do Sul
+  (Sesc/MS), qual foi o colegiado do TCU que a apreciou e quem foi o relator?
+
+nature: "metadata"
+
+scope:
+  corpus: "tcu-acordaos-completo-2024-v1"
+  temporal: "2024"
+  selection_fingerprint: "ec125709322854d164e8f4aeaffb0351ef92e0adfede4d92b17b955b5ea1bc5c"
+
+mandatory_conditions:
+  - description: "Tipo de processo é Denúncia (DEN)."
+    relates_to: "metadata"
+    fields: ["TIPOPROCESSO"]
+  - description: >-
+      Entidade é a Administração Regional do Sesc no Estado do Mato Grosso do Sul
+      (Sesc/MS).
+    relates_to: "metadata"
+    fields: ["ENTIDADE"]
+
+requested_facts:
+  - "Colegiado do TCU que apreciou a denúncia."
+  - "Relator da denúncia."
+
+operations:
+  - "identify"
+
+formulations:
+  direct: >-
+    Na denúncia referente ao Sesc/MS, qual foi o colegiado do TCU e quem foi o
+    relator?
+  paraphrase: >-
+    Em relação à denúncia que envolveu a Administração Regional do Sesc no Mato
+    Grosso do Sul, qual colegiado do Tribunal de Contas da União a julgou e qual
+    foi o relator?
+  verbose: >-
+    Considerando uma denúncia apresentada ao Tribunal de Contas da União que teve
+    como entidade envolvida a Administração Regional do Serviço Social do Comércio
+    no Estado do Mato Grosso do Sul (Sesc/MS), gostaria de saber em qual colegiado
+    do Tribunal essa denúncia foi apreciada e quem atuou como relator do caso.
+
+equivalence_validation:
+  status: "draft"
+  rationale: ""
+  reviewers: []

@@ -1,0 +1,67 @@
+schema_version: "1.0"
+
+# PROVA DE CONCEITO (draft). Necessidade MISTA com potencialmente MÚLTIPLOS
+# documentos relevantes: condição de metadado obrigatória (ENTIDADE = ANTT,
+# incluindo preenchimentos multivalorados e variantes da denominação) + tipo
+# Representação, combinada com evidência textual (reajuste/aumento de tarifa de
+# pedágio). O conjunto relevante NÃO é fixado pelos documentos de origem: deve
+# ser determinado por inspeção exaustiva do universo de representações da ANTT
+# (21 documentos na seleção congelada), lendo ASSUNTO e ACORDAO de cada um.
+need_id: "NI-003"
+
+description: >-
+  Quais representações relativas à Agência Nacional de Transportes Terrestres
+  (ANTT) trataram de reajuste, aumento ou incremento de tarifa de pedágio em
+  concessões rodoviárias, e qual foi a deliberação do TCU em cada caso?
+
+nature: "mixed"
+
+scope:
+  corpus: "tcu-acordaos-completo-2024-v1"
+  temporal: "2024"
+  selection_fingerprint: "ec125709322854d164e8f4aeaffb0351ef92e0adfede4d92b17b955b5ea1bc5c"
+
+mandatory_conditions:
+  - description: "Entidade envolvida é a Agência Nacional de Transportes Terrestres (ANTT)."
+    relates_to: "metadata"
+    fields: ["ENTIDADE"]
+  - description: "Tipo de processo é Representação (REPR)."
+    relates_to: "metadata"
+    fields: ["TIPOPROCESSO"]
+  - description: >-
+      O conteúdo trata de reajuste, aumento ou incremento de tarifa de pedágio em
+      concessão rodoviária. Menções à Tarifa Básica de Pedágio (TBP) são elegíveis
+      quando correspondem a esse tema. Reequilíbrio econômico-financeiro ou revisão
+      contratual só são pertinentes quando houver relação documental EXPLÍCITA com
+      reajuste/aumento de tarifa de pedágio; não incluir automaticamente qualquer
+      documento sobre reequilíbrio econômico-financeiro. Evidência no ASSUNTO e/ou
+      ACORDAO.
+    relates_to: "textual"
+
+requested_facts:
+  - "Conjunto das representações da ANTT sobre tarifa de pedágio (identificação de cada uma)."
+  - "Deliberação do TCU em cada representação identificada."
+
+operations:
+  - "list"
+  - "extract"
+
+formulations:
+  direct: >-
+    Quais representações sobre reajuste ou aumento de tarifa de pedágio relativas
+    à ANTT foram apreciadas pelo TCU, e como o Tribunal decidiu em cada uma?
+  paraphrase: >-
+    Em relação à Agência Nacional de Transportes Terrestres, que representações
+    trataram de aumento ou reajuste das tarifas de pedágio de concessões de
+    rodovias, e qual foi a deliberação do TCU em cada caso?
+  verbose: >-
+    Considerando as representações apreciadas pelo Tribunal de Contas da União que
+    tiveram como entidade envolvida a Agência Nacional de Transportes Terrestres
+    (ANTT) e que discutiram reajustes, aumentos ou incrementos de tarifa de pedágio
+    em contratos de concessão rodoviária, gostaria de saber quais foram essas
+    representações e qual foi a deliberação do Tribunal em cada uma delas.
+
+equivalence_validation:
+  status: "draft"
+  rationale: ""
+  reviewers: []

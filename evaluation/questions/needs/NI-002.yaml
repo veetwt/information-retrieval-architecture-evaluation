@@ -1,0 +1,60 @@
+schema_version: "1.0"
+
+# PROVA DE CONCEITO (draft). Necessidade textual — o tema discriminante está no
+# conteúdo (ASSUNTO/ACORDAO), não em metadados.
+# Alvo documental de origem: doc_id tcu-5567c745c20f (ACORDAO-COMPLETO; Acórdão 16/2024 - Plenário).
+need_id: "NI-002"
+
+description: >-
+  Qual acórdão do TCU — indicando o número e o colegiado — tratou de denúncia
+  sobre possíveis irregularidades na aplicação de recursos federais da educação
+  no Estado de Pernambuco que abordasse, conjuntamente, a alegada falta de
+  merenda nas escolas e a manutenção de contratos temporários de professores?
+
+nature: "textual"
+
+scope:
+  corpus: "tcu-acordaos-completo-2024-v1"
+  temporal: "2024"
+  selection_fingerprint: "ec125709322854d164e8f4aeaffb0351ef92e0adfede4d92b17b955b5ea1bc5c"
+
+mandatory_conditions:
+  - description: >-
+      O conteúdo do documento trata de denúncia sobre POSSÍVEIS irregularidades na
+      aplicação de recursos federais da educação no Estado de Pernambuco e aborda,
+      de forma CONJUNTA (ambos os subtemas no mesmo caso documental): (1) a alegada
+      falta de merenda nas escolas; e (2) a contratação ou manutenção de contratos
+      temporários de professores. Documento que trate de apenas um dos subtemas
+      NÃO é pertinente. Evidência no ASSUNTO e/ou ACORDAO.
+    relates_to: "textual"
+
+requested_facts:
+  - "Número do acórdão."
+  - "Colegiado do TCU."
+
+operations:
+  - "identify"
+
+formulations:
+  direct: >-
+    Qual acórdão do TCU tratou da denúncia sobre possíveis irregularidades em
+    recursos federais da educação em Pernambuco que envolvia, ao mesmo tempo, a
+    alegada falta de merenda escolar e a manutenção de contratos temporários de
+    professores? Informe o número e o colegiado.
+  paraphrase: >-
+    Que acórdão do TCU cuidou da denúncia a respeito de supostas irregularidades
+    em verbas federais de educação no Estado de Pernambuco que reunia, no mesmo
+    caso, a alegada ausência de merenda nas escolas e a contratação temporária de
+    professores? Indique o número do acórdão e o colegiado.
+  verbose: >-
+    Houve uma denúncia no Tribunal de Contas da União a respeito de possíveis
+    irregularidades na aplicação de recursos federais destinados à educação no
+    Estado de Pernambuco. Essa denúncia tratava, conjuntamente, da alegada falta
+    de merenda nas escolas e da manutenção de contratos temporários de
+    professores. Qual foi o número do acórdão que apreciou esse caso e em qual
+    colegiado ele foi proferido?
+
+equivalence_validation:
+  status: "draft"
+  rationale: ""
+  reviewers: []

@@ -30,6 +30,8 @@ efeito.
 Cada requisito é marcado com um status e, quando aberto, com a dependência que o resolverá:
 
 - **[DECIDIDO]** — consolidado; não deve ser reaberto sem justificativa explícita.
+- **[EM RATIFICAÇÃO]** — implementado e validado tecnicamente, aguardando ratificação
+  metodológica formal do pesquisador para ser promovido a **[DECIDIDO]**.
 - **[EM ESTUDO]** — há hipótese provisória, mas ainda sujeita a fundamentação/validação.
 - **[A DEFINIR]** — ainda não há hipótese consolidada.
 - **[OBSERVADO]** — resultado empírico já medido no corpus/diagnóstico; **não** representa
@@ -128,10 +130,33 @@ distingue, para tratar a arquitetura de recuperação como fator central do expe
 5. **[DECIDIDO]** A arquitetura híbrida NÃO SHALL ser um roteador que escolhe entre a
    arquitetura estruturada OU a vetorial; ela SHALL combinar componentes estruturados e
    vetoriais segundo uma regra fixa e reproduzível.
-6. **[A DEFINIR]** A estratégia exata de combinação da híbrida (ex.: filtro estrutural →
-   ranking vetorial, fusão de listas, ponderação de scores) ainda está aberta.
-   Dependência: `literatura`, `teste de viabilidade`, `controle experimental`.
-7. **[DECIDIDO]** Cada formulação incluída no núcleo comparativo do experimento SHALL ser
+6. **[EM RATIFICAÇÃO]** A estratégia de combinação da híbrida está **implementada e
+   validada tecnicamente** como **filtragem estruturada (conjunção das condições)
+   seguida de ranking vetorial sobre TODOS os chunks dos candidatos, com
+   consolidação do score por documento via max-pooling** (ver
+   `docs/experimento/decisao_estrategia_hibrida_e_integridade.md`). Alternativas
+   como fusão de listas (RRF) ou ponderação de scores **não** foram adotadas. A
+   promoção desta regra a **[DECIDIDO]** depende de ratificação metodológica
+   formal do pesquisador ao revisar esta spec. Dependência: `controle experimental`.
+7. **[DECIDIDO]** A **política de fallback** da híbrida SHALL observar três caminhos
+   mutuamente exclusivos, aprovada explicitamente pelo pesquisador:
+   - **Caso A** — nenhuma condição estruturada reconhecida: recuperação vetorial
+     global (`path="vector_global_fallback"`,
+     `fallback_reason="no_conditions_identified"`).
+   - **Caso B** — condições reconhecidas, mas interseção dos filtros vazia:
+     resultado **vazio** (`path="structured_no_candidates"`), **sem** fallback
+     global e **sem** relaxar filtros; condições e diagnósticos preservados.
+   - **Caso C** — condições reconhecidas e candidatos existentes: ranking vetorial
+     dos candidatos (`path="structured_filter_then_vector_rank"`).
+   No Caso A, a híbrida produz, para aquela consulta, o mesmo resultado da
+   arquitetura vetorial; isso SHALL ser considerado na análise experimental.
+8. **[DECIDIDO]** As execuções experimentais oficiais da híbrida SHALL usar
+   `HybridRetriever.from_artifacts(..., verify_integrity=True)`, que valida a
+   compatibilidade entre a seleção congelada e o índice (fingerprint recalculado
+   vs. índice e, quando existir, vs. manifesto; correspondência exata dos
+   conjuntos de `doc_id`; rejeição de índice parcial no carregamento). O
+   parâmetro `verify_integrity=False` NÃO SHALL ser usado nessas execuções.
+9. **[DECIDIDO]** Cada formulação incluída no núcleo comparativo do experimento SHALL ser
    submetida, **sem alteração de conteúdo**, às três arquiteturas (estruturada, vetorial,
    híbrida). Na **comparação pareada de uma mesma formulação**, a diferença deliberada entre
    as condições SHALL ser a arquitetura de recuperação, mantendo-se constantes a
@@ -139,9 +164,9 @@ distingue, para tratar a arquitetura de recuperação como fator central do expe
    arquitetura seja o único fator que varia no experimento completo: a natureza da
    necessidade e a formulação também são fatores experimentais que variam
    entre necessidades/formulações.
-8. **[DECIDIDO]** A diversidade experimental SHALL vir das diferentes necessidades de
-   informação e das diferentes formulações, e NÃO de atribuir previamente perguntas
-   exclusivas a uma arquitetura.
+10. **[DECIDIDO]** A diversidade experimental SHALL vir das diferentes necessidades de
+    informação e das diferentes formulações, e NÃO de atribuir previamente perguntas
+    exclusivas a uma arquitetura.
 
 ---
 
@@ -202,7 +227,7 @@ de expressão.
    6. A natureza da necessidade e a formulação da consulta SHALL ser tratadas como dimensões
       distintas.
    7. Todas as formulações SHALL ser submetidas às três arquiteturas, sem direcionamento por
-      categoria (ver Requirement 3.7).
+      categoria (ver Requirement 3.9).
    8. Os casos NI-01, NI-02 e NI-03 SHALL permanecer exploratórios e NÃO SHALL constituir o
       gabarito definitivo.
    9. As três categorias SHALL ser tratadas como categorias operacionais desta pesquisa,

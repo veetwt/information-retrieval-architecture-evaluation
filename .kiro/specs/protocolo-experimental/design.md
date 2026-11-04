@@ -168,10 +168,36 @@ Necessidade de informação (information_need)  — natureza: metadados | textua
 - A híbrida **não** será um roteador que escolhe entre a arquitetura estruturada OU a
   vetorial.
 - Combinará componentes estruturados e vetoriais segundo uma **regra fixa e reproduzível**.
+- Implementada por **composição** de `StructuredRetriever` (v0.3.0) e `VectorRetriever`
+  (v0.2.0), sem alterá-los; cumpre a interface comum `Retriever` (`HybridRetriever` v0.2.0).
 
-**[A DEFINIR]** (dependências entre colchetes)
-- Estratégia exata de combinação (ex.: filtro estrutural → ranking vetorial; fusão de
-  listas; ponderação de scores). [`literatura`, `teste de viabilidade`, `controle experimental`]
+**[DECIDIDO]** — política de fallback (aprovada; três caminhos mutuamente exclusivos)
+- **Caso A** (nenhuma condição reconhecida): recuperação vetorial global
+  (`path="vector_global_fallback"`). Nesse caso a híbrida equivale à vetorial para aquela
+  consulta — a considerar na análise.
+- **Caso B** (condições reconhecidas, interseção vazia): resultado **vazio**
+  (`path="structured_no_candidates"`), sem fallback global e sem relaxar filtros.
+- **Caso C** (condições reconhecidas e candidatos): filtro estruturado (AND) seguido de
+  ranking vetorial (`path="structured_filter_then_vector_rank"`).
+
+**[EM RATIFICAÇÃO]** — regra de combinação do Caso C
+- Filtragem estruturada pela conjunção das condições; similaridade de cosseno calculada
+  sobre **todos os chunks** dos candidatos; score por documento via **max-pooling**;
+  ordenação por score decrescente com desempate por `doc_id`; limite de exibição aplicado
+  após o ranking. Implementada e validada tecnicamente; pendente de ratificação
+  metodológica formal. Alternativas (RRF, ponderação de scores) **não** adotadas.
+  Ver `docs/experimento/decisao_estrategia_hibrida_e_integridade.md`. [`controle experimental`]
+
+**[DECIDIDO]** — integridade/reprodutibilidade na execução
+- Execuções oficiais usam `HybridRetriever.from_artifacts(..., verify_integrity=True)`:
+  recálculo do fingerprint da seleção (função canônica do projeto) comparado ao índice e,
+  quando existir, ao manifesto; correspondência exata dos conjuntos de `doc_id`; rejeição
+  de índice parcial/inconsistente no carregamento. `verify_integrity=False` e o construtor
+  direto **não** oferecem essas garantias e não são usados em execuções oficiais.
+
+**[A DEFINIR]**
+- O valor de **Top-k** final da comparação (comum às três arquiteturas) permanece aberto;
+  o `display_limit=10` atual é apenas provisório de exibição. [`controle experimental`, `literatura`]
 
 ---
 
@@ -339,7 +365,10 @@ rank/score natural (ex.: a estruturada pode não ter). [`controle experimental`,
 | Combinação ASSUNTO+ACORDAO na representação vetorial | A DEFINIR | análise do corpus, teste de viabilidade, literatura |
 | Schema do registro intermediário | EM ESTUDO | controle experimental, teste de viabilidade |
 | Métricas de recuperação (P@k, R@k, nDCG@k) e k | EM ESTUDO | literatura, controle experimental |
-| Estratégia exata da híbrida | A DEFINIR | literatura, teste de viabilidade, controle experimental |
+| Política de fallback da híbrida (Casos A/B/C) | DECIDIDO | — |
+| Integridade na execução da híbrida (`verify_integrity=True`) | DECIDIDO | — |
+| Regra de combinação do Caso C (filtro → ranking vetorial, max-pooling) | EM RATIFICAÇÃO | controle experimental |
+| Top-k final comum às três arquiteturas | A DEFINIR | controle experimental, literatura |
 | Modelo gerador / runtime | A DEFINIR | teste de viabilidade, literatura |
 | Critérios de equivalência semântica de formulações | A DEFINIR | literatura, controle experimental |
 | Estruturada: NL→filtros, campos, sem-filtro, interpretador, ordenação | A DEFINIR | literatura, teste de viabilidade, análise do corpus, controle experimental |
