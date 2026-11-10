@@ -1,0 +1,77 @@
+{
+  "selection_version": "0.1.0",
+  "run_id": "oficial_recuperacao_altb_2026",
+  "created_at": "2026-11-09T19:40:20.061933+00:00",
+  "design": "alternativa_b_recorte_reduzido_julgamento",
+  "selection_fingerprint": "ec125709322854d164e8f4aeaffb0351ef92e0adfede4d92b17b955b5ea1bc5c",
+  "index": {
+    "model_name": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+    "embedding_dim": 384,
+    "n_docs_indexed": 21631,
+    "n_chunks": 124282,
+    "is_partial_index": false
+  },
+  "retriever_versions": {
+    "structured": "0.3.0",
+    "vector": "0.2.0",
+    "hybrid": "0.2.0"
+  },
+  "params": {
+    "judgment_topk": 5,
+    "record_depth_D": 50,
+    "cap": 67,
+    "strict_universe_need": "NI-003",
+    "references": {
+      "NI-001": [
+        "tcu-b8b9f99c805c"
+      ],
+      "NI-002": [
+        "tcu-5567c745c20f"
+      ]
+    }
+  },
+  "counts": {
+    "n_needs": 3,
+    "n_judgments": 65,
+    "n_record_rows": 9
+  },
+  "per_need": [
+    {
+      "need_id": "NI-001",
+      "n_judgments": 18,
+      "by_source": {
+        "top5_vector": 14,
+        "top5_hybrid": 6,
+        "strict_universe_ni003": 0,
+        "reference": 1
+      }
+    },
+    {
+      "need_id": "NI-002",
+      "n_judgments": 14,
+      "by_source": {
+        "top5_vector": 10,
+        "top5_hybrid": 7,
+        "strict_universe_ni003": 0,
+        "reference": 1
+      }
+    },
+    {
+      "need_id": "NI-003",
+      "n_judgments": 33,
+      "by_source": {
+        "top5_vector": 12,
+        "top5_hybrid": 10,
+        "strict_universe_ni003": 21,
+        "reference": 0
+      }
+    }
+  ],
+  "overlaps": {
+    "pairs_from_multiple_sources": 14,
+    "vector_and_hybrid": 7,
+    "strict_and_ranking": 8,
+    "reference_already_present": 2
+  },
+  "note": "SEM rotulos de relevancia; SEM gold. Documentos fora deste conjunto permanecem com relevancia DESCONHECIDA, nunca automaticamente irrelevantes. D=50 preservado no registro; top-5 e apenas o corte de julgamento."
+}

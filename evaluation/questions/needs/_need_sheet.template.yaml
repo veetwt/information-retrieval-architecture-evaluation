@@ -58,6 +58,31 @@ requested_facts:
 operations:
   - "<operação, se aplicável>"
 
+# ---------------------------------------------------------------------------
+# Critério de relevância (campos OPCIONAIS; previstos no protocolo, §8.E da
+# proposta_operacional_avaliacao_e_gold.md). Declaram, ANTES do julgamento, o
+# que torna um documento relevante. Não são filtros executáveis.
+# ---------------------------------------------------------------------------
+
+# Cardinalidade esperada da resposta: single | enumeration | multidocument.
+# OPCIONAL (omita se ainda não decidido). Em 'single', a resposta é um único
+# documento-alvo; em 'enumeration'/'multidocument', o conjunto-resposta é a união
+# de vários documentos.
+# answer_cardinality: "single"
+
+# Evidências textuais que um documento DEVE conter para ser relevante (lista
+# descritiva). Usada para separar documentos que apenas MENCIONAM o tema dos que
+# efetivamente ATENDEM à necessidade.
+# required_textual_evidence:
+#   - "<evidência textual exigida>"
+
+# Regra de relevância por documento em necessidades multidocumentais. Só é
+# permitida quando answer_cardinality é 'enumeration' ou 'multidocument' (em
+# 'single' deve permanecer ausente/vazia). Define o que conta como "contribuir"
+# para a resposta sem tornar a relevância parcial permissiva demais.
+# partial_relevance_rule: >-
+#   <o que torna um documento parte do conjunto-resposta, e o que NÃO torna>"
+
 # As três condições de formulação (Requirement 5).
 # Em ficha 'draft' podem estar incompletas; em 'validated' devem estar preenchidas.
 formulations:

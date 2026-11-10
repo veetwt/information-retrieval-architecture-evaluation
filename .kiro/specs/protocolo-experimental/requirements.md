@@ -130,14 +130,27 @@ distingue, para tratar a arquitetura de recuperação como fator central do expe
 5. **[DECIDIDO]** A arquitetura híbrida NÃO SHALL ser um roteador que escolhe entre a
    arquitetura estruturada OU a vetorial; ela SHALL combinar componentes estruturados e
    vetoriais segundo uma regra fixa e reproduzível.
-6. **[EM RATIFICAÇÃO]** A estratégia de combinação da híbrida está **implementada e
-   validada tecnicamente** como **filtragem estruturada (conjunção das condições)
-   seguida de ranking vetorial sobre TODOS os chunks dos candidatos, com
-   consolidação do score por documento via max-pooling** (ver
-   `docs/experimento/decisao_estrategia_hibrida_e_integridade.md`). Alternativas
-   como fusão de listas (RRF) ou ponderação de scores **não** foram adotadas. A
-   promoção desta regra a **[DECIDIDO]** depende de ratificação metodológica
-   formal do pesquisador ao revisar esta spec. Dependência: `controle experimental`.
+6. **[DECIDIDO]** A estratégia de combinação da híbrida SHALL ser **filtragem estruturada
+   (conjunção AND das condições reconhecidas) seguida de ranking vetorial de TODOS os
+   documentos candidatos elegíveis, sem pré-corte por Top-k vetorial global**, com
+   similaridade de cosseno sobre os chunks dos candidatos, consolidação do score por
+   documento via **max-pooling** e ordenação determinística por score decrescente com
+   desempate por `doc_id` (ver `docs/experimento/decisao_estrategia_hibrida_e_integridade.md`).
+   **Justificativa da escolha filtro→ranking:** simplicidade, determinismo,
+   interpretabilidade, compatibilidade com o funcionamento da arquitetura estruturada
+   (que produz um conjunto, não um ranking de relevância) e independência em relação ao
+   gold standard. Técnicas como Reciprocal Rank Fusion (RRF) e fusão ponderada de scores
+   **não** são diretamente aplicáveis à saída estruturada atual sem acrescentar um
+   ranking ou score de relevância, razão pela qual não foram adotadas.
+   **Ressalvas metodológicas** (a observar na avaliação): o recall no Caso C é limitado
+   pela cobertura e correção dos filtros estruturados; condições reconhecidas de forma
+   incorreta ou excessivamente restritiva podem excluir documentos relevantes antes do
+   ranking; a consulta vetorial permanece integral (inclusive termos já usados na
+   interpretação de metadados), o que pode reforçar certos termos no ranking sem
+   representar duplicação matemática de scores; o max-pooling pode favorecer documentos
+   com mais chunks e não premia evidência distribuída. Esta decisão ratifica apenas a
+   regra de combinação; os parâmetros de avaliação (Top-k, métricas, gold, geração)
+   permanecem em aberto.
 7. **[DECIDIDO]** A **política de fallback** da híbrida SHALL observar três caminhos
    mutuamente exclusivos, aprovada explicitamente pelo pesquisador:
    - **Caso A** — nenhuma condição estruturada reconhecida: recuperação vetorial
@@ -361,16 +374,49 @@ resposta, para avaliar recuperação e geração separadamente.
 1. **[DECIDIDO]** A avaliação SHALL distinguir **referência documental/evidência** (o que
    deveria ser recuperado) de **referência da resposta** (o que a resposta final deveria
    conter/afirmar).
-2. **[A DEFINIR]** O método de construção do gold/reference.
-   Dependência: `literatura`, `controle experimental`.
-3. **[A DEFINIR]** Os critérios de relevância. Dependência: `literatura`, `controle experimental`.
-4. **[A DEFINIR]** A granularidade da referência (documento, chunk, trecho).
-   Dependência: `literatura`, `análise do corpus`.
-5. **[A DEFINIR]** Julgamento binário vs. gradual. Dependência: `literatura`.
-6. **[A DEFINIR]** Uso de pooling. Dependência: `literatura`, `teste de viabilidade`.
-7. **[A DEFINIR]** Procedimento de revisão. Dependência: `controle experimental`.
-8. **[A DEFINIR]** Formato de armazenamento do gold/reference.
-   Dependência: `teste de viabilidade`.
+2. **[DECIDIDO]** O gold/reference documental SHALL ser construído por **pooling** dos
+   resultados das três arquiteturas, com **profundidade D=50** por formulação, acrescido
+   do complemento derivado das condições obrigatórias **de metadados verificáveis** da
+   ficha (T_cond=100); cada conjunto estruturado SHALL ser julgado integralmente até o
+   **teto T=100** e, acima de T, por **amostragem estratificada por formulação** — o
+   estrato de inclusão certa é a interseção do conjunto com a base determinística do pool
+   (prob = 1) e o estrato restante é amostrado independentemente por formulação; um sorteio
+   numa formulação NÃO torna o documento de inclusão certa em outra. O gerador de pools que
+   executa esta política está **implementado** (`src/evaluation/pool_generator.py`,
+   `pool_sampling.py`; `scripts/build_pools.py`), sem rótulos de relevância. O
+   dimensionamento de `s_R` permanece **[A DEFINIR]** (ver item 9). Ver
+   `docs/experimento/proposta_operacional_avaliacao_e_gold.md`.
+3. **[DECIDIDO]** A **granularidade** da referência documental SHALL ser o `doc_id` (unidade
+   de avaliação); evidências textuais são registradas como apoio, não como unidade de
+   julgamento.
+4. **[DECIDIDO]** O julgamento de relevância SHALL ser **binário** (relevante / não
+   relevante); o estado `uncertain` SHALL existir **apenas durante a revisão** e ser
+   resolvido antes do congelamento do gold.
+5. **[DECIDIDO]** Documentos não julgados (fora do pool) SHALL permanecer com estado
+   **desconhecido**; NÃO SHALL ser classificados automaticamente como não relevantes.
+6. **[A DEFINIR]** Os critérios detalhados de relevância por necessidade (incluindo relevância
+   parcial em necessidades multidocumentais). Dependência: `controle experimental`.
+7. **[A DEFINIR]** Procedimento de revisão e adjudicação; disponibilidade e número de
+   revisores. Dependência: `controle experimental`.
+8. **[A DEFINIR]** Formato de armazenamento definitivo do gold/reference em
+   `evaluation/reference/`. Dependência: `teste de viabilidade`.
+9. **[A DEFINIR]** Regra de dimensionamento de `s_R` (tamanho da amostra do estrato restante
+   da estruturada) a partir de uma precisão-alvo. Dependência: `controle experimental`.
+10. **[A DEFINIR]** Tratamento de necessidades sem documentos relevantes, caso admitidas.
+    Dependência: `controle experimental`.
+11. **[DECIDIDO — ADAPTAÇÃO OPERACIONAL]** A pesquisadora (Vitoria Novaes da Costa) aprovou,
+    por inviabilidade de realizar centenas de julgamentos humanos, um **recorte reduzido de
+    julgamento** (estudo de casos exploratório, "Alternativa B"): o conjunto submetido ao
+    julgamento humano SHALL ser a **união dos top-5 de vetorial e híbrida** (3 formulações,
+    3 necessidades, deduplicado por `(need_id, doc_id)`), acrescido do **universo restrito de
+    21 acórdãos da NI-003** (ENTIDADE = ANTT ∧ TIPOPROCESSO = Representação) e dos documentos
+    de referência confirmados de NI-001/NI-002 ainda ausentes; teto previsto de **67
+    julgamentos distintos**. Este recorte SHALL afetar apenas o desenho de julgamento e o
+    alcance das conclusões, NÃO o corpus, a seleção congelada, o índice nem os recuperadores.
+    A profundidade de recuperação SHALL permanecer **D=50** (distinta do corte de julgamento).
+    O plano amostral `s_R` (item 9) permanece documentado como referência e NÃO SHALL ser
+    apresentado como aplicado ao conjunto reduzido. Detalhes e limitações em
+    `docs/experimento/proposta_operacional_avaliacao_e_gold.md` §12.
 
 ---
 
@@ -381,13 +427,40 @@ definir, para escolher a avaliação com fundamentação.
 
 #### Acceptance Criteria
 
-1. **[EM ESTUDO]** Para recuperação, Precision@k, Recall@k e nDCG@k são apenas **candidatas**;
-   as métricas finais e os valores de k ainda não estão definidos.
-   Dependência: `literatura`, `controle experimental`.
-2. **[A DEFINIR]** Para a resposta final, como medir correção factual, completude, suporte nas
+1. **[DECIDIDO]** A avaliação da recuperação SHALL ser **multidimensional**, preservando a
+   natureza de cada arquitetura: métricas de conjunto/cobertura para as três (com o tamanho
+   do resultado reportado como esforço de inspeção) e métricas de ranking apenas para a
+   vetorial e a híbrida. A arquitetura estruturada SHALL ser avaliada como **conjunto**, sem
+   ranking artificial (não se usa a ordem por `doc_id` como relevância).
+2. **[DECIDIDO]** Os **cortes de ranking** SHALL ser k ∈ {5, 10, 50}, aplicáveis **somente** à
+   vetorial e à híbrida; a profundidade de pooling SHALL ser **D=50**. O `display_limit` dos
+   recuperadores SHALL ser configurado como ≥ ao maior k avaliado, para não truncar o ranking
+   antes do cálculo das métricas.
+3. **[DECIDIDO]** O **orçamento de recuperação** (quantos documentos entram nas métricas) SHALL
+   ser tratado separadamente do **orçamento de contexto do gerador** (quantos documentos/trechos
+   são enviados ao gerador); os dois NÃO precisam coincidir.
+4. **[EM ESTUDO]** O conjunto específico de métricas (ex.: Precision@k, Recall-sob-pool@k,
+   nDCG@k, MRR) ainda não está totalmente fixado. Dependência: `literatura`, `controle
+   experimental`. **Exceção [DECIDIDO]:** para o recorte reduzido (Req 9, item 11), a
+   pesquisadora ratificou a convenção de **Precision@5 com denominador fixo = 5**, registrando
+   `n_retornado` à parte e definindo `Precision@5 = 0` quando não houver resultados; aplicável
+   **apenas** a vetorial e híbrida, **não** ao conjunto estruturado. Ver
+   `docs/experimento/proposta_operacional_avaliacao_e_gold.md` §12.3.
+5. **[A DEFINIR]** Para a resposta final, como medir correção factual, completude, suporte nas
    evidências e afirmações não sustentadas. Dependência: `literatura`, `controle experimental`.
-3. **[A DEFINIR]** Se a avaliação será humana, automática ou por LLM-juiz — NÃO SHALL ser
-   decidido agora. Dependência: `literatura`, `teste de viabilidade`, `controle experimental`.
+6. **[A DEFINIR]** Se a avaliação da geração será humana, automática ou por LLM-juiz — NÃO SHALL
+   ser decidido agora. Dependência: `literatura`, `teste de viabilidade`, `controle experimental`.
+7. **[DECIDIDO — ADAPTAÇÃO OPERACIONAL]** Sob o recorte reduzido (Requirement 9, item 11): a
+   **Precision@5** de vetorial e híbrida SHALL poder ser calculada quando os documentos do
+   corte top-5 estiverem julgados; a **precisão integral de conjuntos estruturados grandes**
+   NÃO SHALL ser estimada como se todos os documentos tivessem sido julgados; a inspeção
+   completa dos 21 da NI-003 SHALL permitir avaliar a relevância **dentro desse universo
+   restrito**, sem confundi-lo com o corpus; documentos não julgados SHALL permanecer
+   desconhecidos; NÃO SHALL ser reivindicado **recall absoluto do corpus**, nem apresentadas
+   **confiança de 95% / margem de ±10 p.p.** como resultado da avaliação reduzida (o plano
+   `s_R` não é aplicado a este conjunto). A comparação SHALL ser **exploratória**, restrita às
+   três necessidades, sem pretensão de superioridade estatística geral. Ver
+   `docs/experimento/proposta_operacional_avaliacao_e_gold.md` §12.3.
 
 ---
 

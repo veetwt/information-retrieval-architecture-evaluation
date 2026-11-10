@@ -1,0 +1,10 @@
+need_id,formulation,structured_set_size,judged_in_set,relevant_judged_in_set,nonrelevant_judged_in_set,unjudged_in_set,judgment_coverage_fraction,structured_no_conditions,structured_overly_broad,has_duplicates,structured_conditions
+NI-001,direct,1,1,1,0,0,1.0,False,False,False,"{""TIPOPROCESSO"": ""DENÚNCIA (DEN)"", ""ENTIDADE"": ""Administração Regional do Serviço Social do Comércio no Estado do Mato Grosso do Sul (Sesc/MS, CNPJ 03.560.440/0001-91)""}"
+NI-001,paraphrase,319,7,1,6,312,0.0219,False,False,False,"{""TIPOPROCESSO"": ""DENÚNCIA (DEN)""}"
+NI-001,verbose,1,1,1,0,0,1.0,False,False,False,"{""TIPOPROCESSO"": ""DENÚNCIA (DEN)"", ""ENTIDADE"": ""Administração Regional do Serviço Social do Comércio no Estado do Mato Grosso do Sul (Sesc/MS, CNPJ 03.560.440/0001-91)""}"
+NI-002,direct,319,7,1,6,312,0.0219,False,False,False,"{""TIPOPROCESSO"": ""DENÚNCIA (DEN)""}"
+NI-002,paraphrase,319,7,1,6,312,0.0219,False,False,False,"{""TIPOPROCESSO"": ""DENÚNCIA (DEN)""}"
+NI-002,verbose,319,7,1,6,312,0.0219,False,False,False,"{""TIPOPROCESSO"": ""DENÚNCIA (DEN)""}"
+NI-003,direct,1414,23,6,17,1391,0.0163,False,False,False,"{""TIPOPROCESSO"": ""REPRESENTAÇÃO (REPR)""}"
+NI-003,paraphrase,21,21,6,15,0,1.0,False,False,False,"{""TIPOPROCESSO"": ""REPRESENTAÇÃO (REPR)"", ""ENTIDADE"": ""Agência Nacional de Transportes Terrestres""}"
+NI-003,verbose,21,21,6,15,0,1.0,False,False,False,"{""TIPOPROCESSO"": ""REPRESENTAÇÃO (REPR)"", ""ENTIDADE"": ""Agência Nacional de Transportes Terrestres""}"

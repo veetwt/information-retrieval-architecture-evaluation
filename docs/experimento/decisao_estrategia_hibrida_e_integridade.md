@@ -1,7 +1,8 @@
 # Decisão: estratégia da arquitetura híbrida, política de fallback e integridade
 
 Status: política de fallback **aprovada**; estratégia geral filtro→ranking
-**implementada e validada tecnicamente, pendente de ratificação metodológica**.
+(regra de combinação do Caso C) **ratificada pelo pesquisador** e promovida a
+**[DECIDIDO]** no protocolo experimental.
 Escopo: arquitetura de recuperação híbrida (composição estruturada + vetorial).
 Artefatos afetados: `src/retrieval/hybrid.py`, `src/retrieval/vector_index.py`
 (apenas `load_index`), `tests/test_hybrid_retrieval.py`.
@@ -64,6 +65,11 @@ Detalhe do Caso C:
   diagnóstico real ("denúncia julgada na Segunda Câmara") reconhecia as duas
   condições, mas a interseção é vazia no corpus; antes da aprovação, o
   comportamento retornava 10 documentos incompatíveis. Agora retorna vazio.
+  **Consequência para a avaliação:** no Caso B o recall da híbrida é zero
+  **somente quando existe ao menos um documento relevante segundo a referência**;
+  quando não há relevante, o conjunto vazio é o resultado correto. Por isso a
+  avaliação deve distinguir os caminhos A/B/C e os documentos candidatos dos
+  efetivamente retornados.
 - O Caso A mantém a cobertura para consultas puramente textuais.
   **Consequência metodológica a considerar na análise:** no Caso A a híbrida
   produz exatamente o resultado da arquitetura vetorial para aquela consulta
@@ -148,8 +154,13 @@ Nenhuma dessas pendências é bloqueante para a validação técnica já conclu�
 
 - Política de fallback (Casos A/B/C): **[DECIDIDO]** (aprovada explicitamente
   pelo pesquisador).
-- Estratégia geral filtro→ranking com max-pooling: **implementada e validada
-  tecnicamente; pendente de ratificação metodológica formal** ao revisar a spec.
+- Estratégia geral filtro→ranking com max-pooling (regra de combinação do Caso C):
+  **[DECIDIDO]** — ratificada pelo pesquisador, com as ressalvas metodológicas
+  registradas nesta nota (recall limitado pelo filtro; condições incorretas/restritivas
+  podem excluir relevantes; consulta vetorial integral pode reforçar termos já usados no
+  filtro, sem duplicação matemática de scores; max-pooling pode favorecer documentos com
+  mais chunks e não premia evidência distribuída). A ratificação cobre apenas a regra de
+  combinação; os parâmetros de avaliação seguem em aberto.
 - Garantias de integridade/reprodutibilidade: **[DECIDIDO]** como requisito de
   execução (uso de `verify_integrity=True`).
 - Top-k experimental, métricas, gold standard e modelo gerador permanecem

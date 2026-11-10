@@ -35,6 +35,24 @@ requested_facts:
 operations:
   - "identify"
 
+# Cardinalidade esperada da resposta: documento único (identificação).
+answer_cardinality: "single"
+
+# Evidência textual que caracteriza relevância. O tema discriminante está no
+# conteúdo (ASSUNTO/ACORDAO), não em metadados. A relevância exige a CONJUNÇÃO
+# dos dois subtemas no mesmo caso documental; documento que trate de apenas um
+# deles NÃO é relevante. "Contratação" e "manutenção" de contratos temporários
+# de professores contam igualmente para esse subtema.
+required_textual_evidence:
+  - >-
+    O conteúdo trata de denúncia sobre possíveis irregularidades na aplicação
+    de recursos federais da educação no Estado de Pernambuco.
+  - >-
+    O mesmo caso aborda, de forma CONJUNTA, os dois subtemas: (1) a alegada
+    falta de merenda nas escolas; e (2) a contratação ou a manutenção de
+    contratos temporários de professores. A presença de apenas um dos subtemas
+    não caracteriza relevância.
+
 formulations:
   direct: >-
     Qual acórdão do TCU tratou da denúncia sobre possíveis irregularidades em
@@ -44,8 +62,8 @@ formulations:
   paraphrase: >-
     Que acórdão do TCU cuidou da denúncia a respeito de supostas irregularidades
     em verbas federais de educação no Estado de Pernambuco que reunia, no mesmo
-    caso, a alegada ausência de merenda nas escolas e a contratação temporária de
-    professores? Indique o número do acórdão e o colegiado.
+    caso, a alegada ausência de merenda nas escolas e a continuidade de contratos
+    temporários de professores? Indique o número do acórdão e o colegiado.
   verbose: >-
     Houve uma denúncia no Tribunal de Contas da União a respeito de possíveis
     irregularidades na aplicação de recursos federais destinados à educação no
@@ -55,6 +73,28 @@ formulations:
     colegiado ele foi proferido?
 
 equivalence_validation:
-  status: "draft"
-  rationale: ""
-  reviewers: []
+  # Validada por revisão humana (Vitoria Novaes da Costa). A conferência factual
+  # do documento de origem tcu-5567c745c20f (Acórdão 16/2024 - Plenário) foi
+  # concluída. A paráfrase foi ajustada de "contratação temporária de
+  # professores" para "continuidade de contratos temporários de professores",
+  # alinhando-a ao termo factual da fonte ("manutenção de contratos temporários").
+  status: "validated"
+  rationale: >-
+    Natureza: necessidade TEXTUAL — o tema discriminante reside no conteúdo
+    (ASSUNTO/ACORDAO) e não em metadados; não há condição estrutural obrigatória.
+    Evidência necessária: o documento deve tratar da denúncia sobre recursos
+    federais da educação em Pernambuco e abordar, CONJUNTAMENTE, a alegada falta
+    de merenda e a manutenção/contratação de professores temporários — a
+    presença de um só subtema não caracteriza relevância. Relevância para a
+    comparação das arquiteturas: é um caso de documento único cuja discriminação
+    depende de evidência textual composta (dois subtemas no mesmo caso), útil
+    para observar como a recuperação vetorial/híbrida lida com conjunção
+    semântica que a recuperação estruturada não expressa — sem presumir
+    superioridade de qualquer abordagem. Equivalência das três formulações:
+    direta, parafraseada e prolixa pedem os mesmos dois fatos (número do acórdão
+    e colegiado) e preservam a conjunção obrigatória dos dois subtemas; a prolixa
+    é mais extensa porém não adiciona fato novo nem pista da resposta, e nenhuma
+    formulação introduz restrição ausente nas demais.
+  reviewers:
+    - id: "Vitoria Novaes da Costa"
+      decision: "equivalent"

@@ -94,6 +94,30 @@ class ValidationStatus(str, Enum):
     VALIDATED = "validated"
 
 
+class AnswerCardinality(str, Enum):
+    """Cardinalidade esperada da resposta (atributo ORTOGONAL à natureza).
+
+    Previsto no protocolo (``proposta_operacional_avaliacao_e_gold.md`` §8.E) para
+    tornar o critério de relevância explícito ANTES do julgamento:
+
+    - ``single``: a necessidade é satisfeita por um ÚNICO documento-alvo
+      (identificação). Relevante = satisfaz as ``mandatory_conditions`` e contém
+      os ``requested_facts`` que identificam o documento.
+    - ``enumeration``: a resposta é uma enumeração/contagem cujo conjunto-resposta
+      é a união de vários documentos.
+    - ``multidocument``: a resposta é composta por MÚLTIPLOS documentos, cada um
+      contribuindo com parte da resposta (ver ``partial_relevance_rule``).
+
+    É um campo OPCIONAL no schema: fichas ``draft`` e o template podem omiti-lo. A
+    forma final permanece ``[A DEFINIR]`` no protocolo; sua presença aqui é a
+    extensão mínima para registrar o critério sem perda de informação.
+    """
+
+    SINGLE = "single"
+    ENUMERATION = "enumeration"
+    MULTIDOCUMENT = "multidocument"
+
+
 class Scope(BaseModel):
     """Escopo documental e temporal da necessidade.
 
@@ -250,6 +274,28 @@ class NeedSheet(BaseModel):
     operations: list[str] = Field(default_factory=list)
     """Operações necessárias, quando aplicáveis (ex.: identify, count, compare, aggregate)."""
 
+    answer_cardinality: AnswerCardinality | None = None
+    """Cardinalidade esperada da resposta (single | enumeration | multidocument).
+
+    OPCIONAL (previsto no protocolo, §8.E). Quando ausente, o critério de
+    relevância conforme cardinalidade ainda não foi declarado. Não é exigido para
+    ``validated`` (a exigência final permanece [A DEFINIR] no protocolo)."""
+
+    required_textual_evidence: list[str] = Field(default_factory=list)
+    """Evidências textuais que um documento DEVE conter para ser relevante.
+
+    OPCIONAL (previsto no protocolo, §8.E). Descritivo; não é filtro executável.
+    Usado para distinguir documentos que apenas MENCIONAM o tema daqueles que
+    efetivamente ATENDEM à necessidade."""
+
+    partial_relevance_rule: str = ""
+    """Regra de relevância por documento em necessidades multidocumentais.
+
+    OPCIONAL (previsto no protocolo, §8.E). Define o que conta como "contribuir"
+    para a resposta — um documento é relevante se cobre ao menos a PARTE que lhe
+    cabe. Só é coerente quando ``answer_cardinality`` é ``enumeration`` ou
+    ``multidocument``; em ``single`` deve permanecer vazio (ver validador)."""
+
     formulations: Formulations
     """As três condições de formulação."""
 
@@ -273,6 +319,24 @@ class NeedSheet(BaseModel):
         """Aplica exigências de ciclo de vida sem julgar equivalência semântica."""
         if self.equivalence_validation.status == ValidationStatus.VALIDATED:
             self._validate_validated_sheet()
+        return self
+
+    @model_validator(mode="after")
+    def _validate_relevance_fields(self) -> "NeedSheet":
+        """Coerência estrutural dos campos de critério de relevância.
+
+        Não julga o MÉRITO do critério (isso é revisão humana); apenas impede
+        combinações incoerentes: ``partial_relevance_rule`` só faz sentido em
+        necessidade multidocumental/enumeração. Em ``single`` (ou cardinalidade
+        ainda não declarada) a regra de relevância parcial deve permanecer vazia,
+        pois não há "parte" a contribuir num documento-alvo único."""
+        if self.partial_relevance_rule.strip():
+            if self.answer_cardinality in (None, AnswerCardinality.SINGLE):
+                raise ValueError(
+                    "partial_relevance_rule só é permitido quando "
+                    "answer_cardinality é 'enumeration' ou 'multidocument'; "
+                    f"recebido answer_cardinality={self.answer_cardinality}."
+                )
         return self
 
     def _validate_validated_sheet(self) -> None:

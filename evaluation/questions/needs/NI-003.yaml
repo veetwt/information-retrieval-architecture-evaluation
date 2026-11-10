@@ -46,10 +46,60 @@ operations:
   - "list"
   - "extract"
 
+# Cardinalidade esperada da resposta: MULTIDOCUMENTAL. O conjunto-resposta é a
+# união de todas as representações da ANTT que tratam de reajuste/aumento de
+# tarifa de pedágio; não há um único documento-alvo.
+answer_cardinality: "multidocument"
+
+# Evidência textual exigida (além das condições estruturais ENTIDADE=ANTT e
+# TIPOPROCESSO=REPR). O conteúdo deve tratar de reajuste, aumento ou incremento
+# de tarifa de pedágio em concessão rodoviária, com evidência no ASSUNTO e/ou
+# no ACORDAO.
+required_textual_evidence:
+  - >-
+    O conteúdo trata de reajuste, aumento ou incremento de tarifa de pedágio em
+    concessão rodoviária. Menções à Tarifa Básica de Pedágio (TBP) são elegíveis
+    quando correspondem a esse tema.
+  - >-
+    Reequilíbrio econômico-financeiro ou revisão contratual só constituem
+    evidência quando houver relação documental EXPLÍCITA com reajuste/aumento de
+    tarifa de pedágio; não basta o documento tratar genericamente de
+    reequilíbrio econômico-financeiro.
+
+# Regra de relevância por documento em necessidade multidocumental.
+# Define o que conta como "contribuir" para a resposta e distingue documento que
+# INTEGRA a resposta de documento apenas RELACIONADO ao assunto. A relevância
+# parcial é deliberadamente restrita: não torna relevante qualquer documento
+# sobre a ANTT ou sobre pedágio em geral.
+partial_relevance_rule: >-
+  Um documento é relevante (integra o conjunto-resposta) se, e somente se,
+  satisfizer AS DUAS condições estruturais (ENTIDADE = ANTT e TIPOPROCESSO =
+  Representação) E contiver evidência textual de que a representação trata de
+  reajuste, aumento ou incremento de tarifa de pedágio em concessão rodoviária
+  (incluindo TBP quando corresponder a esse tema). Cada documento relevante
+  contribui com uma parte da resposta — a identificação daquela representação e
+  a deliberação do TCU no caso —, não se exigindo que um único documento
+  contenha todas as representações. Acórdãos recursais — incluindo pedidos de
+  reexame e embargos de declaração — PODEM ser documentos relevantes quando
+  satisfizerem as condições estruturais da ficha (ENTIDADE = ANTT e
+  TIPOPROCESSO = Representação) e discutirem efetivamente o tema de reajuste,
+  aumento ou incremento de tarifa de pedágio; essa inclusão NÃO é automática: é
+  necessário comprovar a pertinência documental do recurso ou embargo ao objeto
+  investigado. A unidade de julgamento da recuperação permanece o doc_id: cada
+  acórdão é julgado individualmente. Acórdãos diferentes associados à mesma
+  representação podem constituir, cada um, evidência documental relevante, mas a
+  representação (o processo) NÃO deve ser contabilizada repetidamente na
+  enumeração da resposta final. NÃO são relevantes, ainda que citem a ANTT ou
+  pedágio: representações sobre outros temas da ANTT; documentos que tratam
+  apenas de reequilíbrio econômico-financeiro sem vínculo explícito com reajuste
+  de tarifa de pedágio; e documentos que apenas mencionam tarifa de pedágio de
+  passagem, incidentalmente, sem que esse seja o objeto da representação.
+
 formulations:
   direct: >-
-    Quais representações sobre reajuste ou aumento de tarifa de pedágio relativas
-    à ANTT foram apreciadas pelo TCU, e como o Tribunal decidiu em cada uma?
+    Quais representações sobre reajuste ou aumento de tarifa de pedágio em
+    concessões rodoviárias relativas à ANTT foram apreciadas pelo TCU, e como o
+    Tribunal decidiu em cada uma?
   paraphrase: >-
     Em relação à Agência Nacional de Transportes Terrestres, que representações
     trataram de aumento ou reajuste das tarifas de pedágio de concessões de
@@ -62,6 +112,33 @@ formulations:
     representações e qual foi a deliberação do Tribunal em cada uma delas.
 
 equivalence_validation:
-  status: "draft"
-  rationale: ""
-  reviewers: []
+  # Validada por revisão humana (Vitoria Novaes da Costa). Ajustes autorizados
+  # aplicados: formulação direta passou a incluir "em concessões rodoviárias"
+  # (alinhamento com paráfrase e prolixa); partial_relevance_rule foi explicitada
+  # quanto a acórdãos recursais (reexame/embargos), unidade de julgamento (doc_id)
+  # e não contabilização repetida da mesma representação. Natureza mixed e
+  # cardinalidade multidocument preservadas. A classificação de relevância dos
+  # acórdãos da ANTT pertence à construção posterior do gold standard.
+  status: "validated"
+  rationale: >-
+    Natureza: necessidade MISTA — combina condições estruturais obrigatórias
+    (ENTIDADE = ANTT; TIPOPROCESSO = Representação) com evidência textual
+    (reajuste/aumento de tarifa de pedágio em concessão rodoviária). Cardinalidade
+    multidocumental: o conjunto-resposta não é fixado por um documento de origem e
+    deve ser determinado por inspeção do universo de representações da ANTT.
+    Evidência necessária: satisfação simultânea das duas condições de metadados e
+    da condição textual de tema, com a regra de borda que restringe reequilíbrio
+    econômico-financeiro aos casos com vínculo explícito a reajuste de tarifa.
+    Relevância para a comparação das arquiteturas: por reunir filtro estrutural e
+    discriminação textual com resposta distribuída em vários documentos, é o caso
+    que melhor expõe as diferenças entre recuperação estruturada (delimita a
+    entidade e o tipo), vetorial (capta o tema no texto) e híbrida (combina
+    ambas), permitindo avaliar cobertura do conjunto-resposta sem presumir qual
+    abordagem é superior. Equivalência das três formulações: direta, parafraseada
+    e prolixa pedem o mesmo conjunto (as representações da ANTT sobre tarifa de
+    pedágio) e o mesmo fato por item (a deliberação do TCU), preservam as mesmas
+    condições e não introduzem restrição nova; a prolixa é mais extensa sem
+    adicionar fato novo nem pista da resposta.
+  reviewers:
+    - id: "Vitoria Novaes da Costa"
+      decision: "equivalent"

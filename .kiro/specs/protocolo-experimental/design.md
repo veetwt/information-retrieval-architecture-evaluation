@@ -180,13 +180,21 @@ Necessidade de informação (information_need)  — natureza: metadados | textua
 - **Caso C** (condições reconhecidas e candidatos): filtro estruturado (AND) seguido de
   ranking vetorial (`path="structured_filter_then_vector_rank"`).
 
-**[EM RATIFICAÇÃO]** — regra de combinação do Caso C
-- Filtragem estruturada pela conjunção das condições; similaridade de cosseno calculada
-  sobre **todos os chunks** dos candidatos; score por documento via **max-pooling**;
-  ordenação por score decrescente com desempate por `doc_id`; limite de exibição aplicado
-  após o ranking. Implementada e validada tecnicamente; pendente de ratificação
-  metodológica formal. Alternativas (RRF, ponderação de scores) **não** adotadas.
-  Ver `docs/experimento/decisao_estrategia_hibrida_e_integridade.md`. [`controle experimental`]
+**[DECIDIDO]** — regra de combinação do Caso C (ratificada pelo pesquisador)
+- Filtragem estruturada pela conjunção (AND) das condições; ranking de **todos os
+  documentos candidatos elegíveis** (sem pré-corte por Top-k vetorial global);
+  similaridade de cosseno calculada sobre **todos os chunks** dos candidatos; score por
+  documento via **max-pooling**; ordenação por score decrescente com desempate por
+  `doc_id`; limite de exibição aplicado após o ranking.
+- **Justificativa:** simplicidade, determinismo, interpretabilidade, compatibilidade com a
+  estruturada (conjunto, não ranking) e independência do gold standard. RRF e fusão
+  ponderada **não** são diretamente aplicáveis à saída estruturada atual sem acrescentar
+  ranking/score de relevância; por isso não foram adotadas.
+- **Ressalvas:** recall do Caso C limitado pela cobertura/correção dos filtros; condições
+  incorretas/restritivas podem excluir relevantes; a consulta vetorial permanece integral
+  (pode reforçar termos já usados no filtro, sem duplicação matemática de scores);
+  max-pooling pode favorecer documentos com mais chunks e não premia evidência distribuída.
+  Ver `docs/experimento/decisao_estrategia_hibrida_e_integridade.md`.
 
 **[DECIDIDO]** — integridade/reprodutibilidade na execução
 - Execuções oficiais usam `HybridRetriever.from_artifacts(..., verify_integrity=True)`:
@@ -292,22 +300,51 @@ rank/score natural (ex.: a estruturada pode não ter). [`controle experimental`,
 - Distinção entre **referência documental/evidência** (o que deveria ser recuperado) e
   **referência da resposta** (o que a resposta final deveria conter/afirmar).
 
+**[DECIDIDO]**
+- Construção por **pooling** das três arquiteturas, profundidade **D=50** por formulação, +
+  complemento pelas condições obrigatórias da ficha; conjunto estruturado julgado integralmente
+  até **T=100** e, acima, por amostragem estratificada (estrato I = censo dos já no pool;
+  estrato R = amostra aleatória do restante). Ver
+  `docs/experimento/proposta_operacional_avaliacao_e_gold.md`.
+- **Granularidade:** `doc_id` (evidência textual como apoio, não unidade).
+- **Julgamento binário** (relevante/não relevante); `uncertain` apenas durante a revisão.
+- Documentos **não julgados** permanecem **desconhecidos** (nunca não relevantes).
+
+**[DECIDIDO — ADAPTAÇÃO OPERACIONAL (Alternativa B)]**
+- Por inviabilidade de centenas de julgamentos humanos, a pesquisadora aprovou um **recorte
+  reduzido de julgamento** (estudo de casos exploratório): **união dos top-5 de vetorial e
+  híbrida** (3 formulações × 3 necessidades, deduplicado por `(need_id, doc_id)`) + **universo
+  restrito de 21 acórdãos da NI-003** (ENTIDADE = ANTT ∧ TIPOPROCESSO = Representação) +
+  documentos de referência de NI-001/NI-002 ainda ausentes; teto previsto **67 julgamentos**.
+- O recorte afeta **apenas o desenho de julgamento e o alcance das conclusões**; **D=50**
+  (profundidade de recuperação) permanece e é distinta do corte de julgamento; o plano `s_R`
+  segue documentado como referência e **não** é aplicado ao conjunto reduzido. Ver
+  `docs/experimento/proposta_operacional_avaliacao_e_gold.md` §12.
+
 **[A DEFINIR]** (dependências entre colchetes)
-- Método de construção do gold. [`literatura`, `controle experimental`]
-- Critérios de relevância. [`literatura`, `controle experimental`]
-- Granularidade (documento/chunk/trecho). [`literatura`, `análise do corpus`]
-- Julgamento binário vs. gradual. [`literatura`]
-- Pooling. [`literatura`, `teste de viabilidade`]
-- Revisão. [`controle experimental`]
-- Formato de armazenamento. [`teste de viabilidade`]
+- Critérios detalhados de relevância por necessidade, incl. relevância parcial em
+  necessidades multidocumentais. [`controle experimental`]
+- Regra de dimensionamento de `s_R` (não aplicável ao recorte reduzido; referência para
+  eventual retomada do plano amostral). [`controle experimental`]
+- Procedimento de revisão/adjudicação e número de revisores. [`controle experimental`]
+- Formato de armazenamento definitivo em `evaluation/reference/`. [`teste de viabilidade`]
+- Tratamento de necessidades sem relevantes, se admitidas. [`controle experimental`]
 
 ---
 
 ## Avaliação
 
 **Recuperação (evidências):**
-- **[EM ESTUDO]** Candidatas: Precision@k, Recall@k, nDCG@k. Métricas finais e valores de k
-  ainda não definidos. [`literatura`, `controle experimental`]
+- **[DECIDIDO]** Avaliação **multidimensional**: métricas de conjunto/cobertura para as três
+  arquiteturas (com o tamanho do resultado reportado); métricas de ranking apenas para
+  vetorial e híbrida. Estruturada avaliada como **conjunto**, sem ranking artificial.
+- **[DECIDIDO]** Cortes de ranking **k ∈ {5, 10, 50}** (vetorial/híbrida); profundidade de
+  pooling **D=50**; `display_limit ≥ max(k)` para não truncar antes das métricas.
+- **[DECIDIDO]** **Orçamento de recuperação** (métricas) e **orçamento de contexto do gerador**
+  são separados e não precisam coincidir.
+- **[EM ESTUDO]** Conjunto específico de métricas (ex.: Precision@k, Recall-sob-pool@k,
+  nDCG@k, MRR) e a convenção de Precision@k para listas menores que k. [`literatura`,
+  `controle experimental`]
 
 **Resposta final:**
 - **[A DEFINIR]** Como medir correção factual, completude, suporte nas evidências e
@@ -364,14 +401,21 @@ rank/score natural (ex.: a estruturada pode não ter). [`controle experimental`,
 | Vínculo ao corpus via scope.selection_fingerprint; conferência ao manifesto é validação separada | DECIDIDO | — |
 | Combinação ASSUNTO+ACORDAO na representação vetorial | A DEFINIR | análise do corpus, teste de viabilidade, literatura |
 | Schema do registro intermediário | EM ESTUDO | controle experimental, teste de viabilidade |
-| Métricas de recuperação (P@k, R@k, nDCG@k) e k | EM ESTUDO | literatura, controle experimental |
+| Desenho de avaliação multidimensional (conjunto p/ as três + ranking p/ vetorial/híbrida) | DECIDIDO | — |
+| Cortes de ranking k ∈ {5,10,50} (vetorial/híbrida); profundidade de pooling D=50 | DECIDIDO | — |
+| Teto T=100 p/ julgamento integral do conjunto estruturado (acima: amostragem estratificada) | DECIDIDO | — |
+| Julgamento binário relevante/não-relevante (`uncertain` só na revisão) | DECIDIDO | — |
+| Estruturada avaliada como conjunto, sem ranking artificial | DECIDIDO | — |
+| Separação orçamento de recuperação × orçamento de contexto do gerador | DECIDIDO | — |
+| Conjunto específico de métricas e convenção de Precision@k p/ listas < k | EM ESTUDO | literatura, controle experimental |
 | Política de fallback da híbrida (Casos A/B/C) | DECIDIDO | — |
 | Integridade na execução da híbrida (`verify_integrity=True`) | DECIDIDO | — |
-| Regra de combinação do Caso C (filtro → ranking vetorial, max-pooling) | EM RATIFICAÇÃO | controle experimental |
-| Top-k final comum às três arquiteturas | A DEFINIR | controle experimental, literatura |
+| Regra de combinação do Caso C (filtro → ranking vetorial, max-pooling) | DECIDIDO | — |
+| Dimensionamento de `s_R` (amostra do estrato restante da estruturada) | A DEFINIR | controle experimental |
 | Modelo gerador / runtime | A DEFINIR | teste de viabilidade, literatura |
 | Critérios de equivalência semântica de formulações | A DEFINIR | literatura, controle experimental |
 | Estruturada: NL→filtros, campos, sem-filtro, interpretador, ordenação | A DEFINIR | literatura, teste de viabilidade, análise do corpus, controle experimental |
 | Vetorial: HTML, embedding, tokenizer, doc×chunk, chunking, agregação, similaridade, Top-k | A DEFINIR | análise do corpus, teste de viabilidade, literatura, controle experimental |
-| Gold: construção, relevância, granularidade, binário/gradual, pooling, revisão, formato | A DEFINIR | literatura, controle experimental, análise do corpus, teste de viabilidade |
+| Gold: pooling (D=50)+complemento por condições; granularidade doc_id; binário; não-julgado=desconhecido | DECIDIDO | — |
+| Gold: critérios de relevância por necessidade, revisão/adjudicação, formato, necessidades sem relevantes | A DEFINIR | controle experimental, teste de viabilidade |
 | Avaliação da resposta final e modalidade | A DEFINIR | literatura, teste de viabilidade, controle experimental |

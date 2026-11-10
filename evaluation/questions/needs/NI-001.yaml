@@ -32,6 +32,22 @@ requested_facts:
 operations:
   - "identify"
 
+# Cardinalidade esperada da resposta: documento único (identificação).
+answer_cardinality: "single"
+
+# Evidência documental necessária para considerar um acórdão relevante.
+# A resposta (colegiado e relator) está em metadados, mas a relevância do
+# documento depende de ele SER o acórdão que apreciou a denúncia do Sesc/MS —
+# não basta mencionar o Sesc/MS em outro contexto. O documento relevante é o
+# acórdão que apreciou a denúncia cujo tipo de processo é DEN e cuja entidade é
+# a Administração Regional do Sesc no Mato Grosso do Sul.
+required_textual_evidence:
+  - >-
+    O documento é o acórdão que apreciou a denúncia (TIPOPROCESSO = DEN)
+    referente à Administração Regional do Sesc no Estado do Mato Grosso do Sul
+    (Sesc/MS), e não um acórdão que apenas cita o Sesc/MS ou que apreciou outra
+    denúncia de entidade distinta.
+
 formulations:
   direct: >-
     Na denúncia referente ao Sesc/MS, qual foi o colegiado do TCU e quem foi o
@@ -47,6 +63,26 @@ formulations:
     do Tribunal essa denúncia foi apreciada e quem atuou como relator do caso.
 
 equivalence_validation:
-  status: "draft"
-  rationale: ""
-  reviewers: []
+  # Validada por revisão humana (Vitoria Novaes da Costa). A conferência factual
+  # do documento de origem tcu-b8b9f99c805c (denúncia do Sesc/MS apreciada pelo
+  # Plenário, relator Antonio Anastasia) foi concluída nesta validação.
+  status: "validated"
+  rationale: >-
+    Natureza: necessidade de METADADOS — a resposta (colegiado e relator) são
+    campos estruturados, e o documento-alvo é identificado por duas condições de
+    metadados (TIPOPROCESSO = DEN e ENTIDADE = Sesc/MS). Evidência necessária:
+    correspondência de metadados que identifique inequivocamente a denúncia do
+    Sesc/MS; a mera menção textual ao Sesc/MS não caracteriza relevância.
+    Relevância para a comparação das arquiteturas: é um caso de cardinalidade
+    única cuja evidência discriminante reside em metadados, favorecendo a priori
+    a verificação estrutural; permite observar como as abordagens vetorial e
+    híbrida se comportam quando o alvo é determinado por campos estruturados e
+    não pelo conteúdo semântico — sem presumir qual arquitetura vence.
+    Equivalência das três formulações: direta, parafraseada e prolixa pedem os
+    mesmos dois fatos (colegiado e relator) sob a mesma condição (a denúncia do
+    Sesc/MS); a prolixa expande a sigla Sesc para "Serviço Social do Comércio"
+    como glosa, sem introduzir fato novo nem pista da resposta, e nenhuma
+    formulação adiciona restrição ausente nas demais.
+  reviewers:
+    - id: "Vitoria Novaes da Costa"
+      decision: "equivalent"

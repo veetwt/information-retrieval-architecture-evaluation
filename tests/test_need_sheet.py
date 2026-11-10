@@ -16,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from evaluation.need_sheet import (  # noqa: E402
     NeedSheet,
     NeedNature,
+    AnswerCardinality,
     ValidationStatus,
     PERMITTED_METADATA_FIELDS,
     verify_selection_fingerprint,
@@ -246,6 +247,79 @@ def test_condicao_textual_sem_fields_valida():
     ]
     sheet = NeedSheet.model_validate(d)
     assert sheet.mandatory_conditions[0].fields == []
+
+
+# --------------------------------------------------------------------------- #
+# Critério de relevância (campos opcionais previstos no protocolo, §8.E)
+# --------------------------------------------------------------------------- #
+
+def test_campos_relevancia_sao_opcionais():
+    # Ficha draft sem os novos campos continua válida (retrocompatibilidade).
+    sheet = NeedSheet.model_validate(draft_sheet_dict())
+    assert sheet.answer_cardinality is None
+    assert sheet.required_textual_evidence == []
+    assert sheet.partial_relevance_rule == ""
+
+
+@pytest.mark.parametrize("card", ["single", "enumeration", "multidocument"])
+def test_answer_cardinality_valida(card):
+    d = draft_sheet_dict()
+    d["answer_cardinality"] = card
+    assert NeedSheet.model_validate(d).answer_cardinality.value == card
+
+
+def test_answer_cardinality_invalida_rejeitada():
+    d = draft_sheet_dict()
+    d["answer_cardinality"] = "unica"
+    with pytest.raises(ValidationError):
+        NeedSheet.model_validate(d)
+
+
+def test_required_textual_evidence_lista():
+    d = draft_sheet_dict()
+    d["required_textual_evidence"] = ["conteúdo trata de X", "e também de Y"]
+    sheet = NeedSheet.model_validate(d)
+    assert len(sheet.required_textual_evidence) == 2
+
+
+def test_partial_relevance_rule_exige_cardinalidade_multi():
+    # single (ou ausente) + partial_relevance_rule preenchido => incoerente.
+    d = draft_sheet_dict()
+    d["answer_cardinality"] = "single"
+    d["partial_relevance_rule"] = "qualquer doc do tema conta"
+    with pytest.raises(ValidationError) as exc:
+        NeedSheet.model_validate(d)
+    assert "partial_relevance_rule" in str(exc.value)
+
+
+def test_partial_relevance_rule_sem_cardinalidade_rejeitada():
+    d = draft_sheet_dict()
+    d["partial_relevance_rule"] = "contribui com parte da resposta"
+    with pytest.raises(ValidationError):
+        NeedSheet.model_validate(d)
+
+
+@pytest.mark.parametrize("card", ["enumeration", "multidocument"])
+def test_partial_relevance_rule_valida_em_multidocumento(card):
+    d = draft_sheet_dict()
+    d["answer_cardinality"] = card
+    d["partial_relevance_rule"] = "relevante se cobre a parte que lhe cabe"
+    sheet = NeedSheet.model_validate(d)
+    assert sheet.partial_relevance_rule.startswith("relevante")
+
+
+def test_campos_relevancia_round_trip_yaml(tmp_path):
+    d = draft_sheet_dict()
+    d["answer_cardinality"] = "multidocument"
+    d["required_textual_evidence"] = ["tema de pedágio"]
+    d["partial_relevance_rule"] = "contribui com parte"
+    p = tmp_path / "NI-003.yaml"
+    p.write_text(yaml.safe_dump(d, allow_unicode=True), encoding="utf-8")
+    sheet = NeedSheet.from_yaml(p)
+    reloaded = yaml.safe_load(sheet.to_yaml())
+    assert reloaded["answer_cardinality"] == "multidocument"
+    assert reloaded["required_textual_evidence"] == ["tema de pedágio"]
+    assert reloaded["partial_relevance_rule"] == "contribui com parte"
 
 
 # --------------------------------------------------------------------------- #

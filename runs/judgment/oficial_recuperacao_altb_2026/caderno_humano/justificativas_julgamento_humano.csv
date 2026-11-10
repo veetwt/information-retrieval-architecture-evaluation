@@ -1,0 +1,66 @@
+need_id,doc_id,decisao,justificativa_humana,revisora
+NI-001,tcu-011cea3ce1e6,nao relevante,Tipo TCE e entidade Sesi/AP; nao corresponde a denuncia do Sesc/MS.,Vitoria Novaes da Costa
+NI-001,tcu-034c4b1fbd11,nao relevante,Tipo ADS e entidade Caixa Economica Federal.,Vitoria Novaes da Costa
+NI-001,tcu-0663cdfee5a6,nao relevante,"E denuncia, mas a entidade e CREF/PR, nao Sesc/MS.",Vitoria Novaes da Costa
+NI-001,tcu-1554924671c9,nao relevante,"E denuncia, mas a entidade e CREA/MT, nao Sesc/MS.",Vitoria Novaes da Costa
+NI-001,tcu-1b7c45fcd7e5,nao relevante,"Tipo REPR e entidade CNEN, nao Sesc/MS.",Vitoria Novaes da Costa
+NI-001,tcu-27ca0e17e5da,nao relevante,Representacao relativa a UFRGS; nao corresponde a denuncia do Sesc/MS.,Vitoria Novaes da Costa
+NI-001,tcu-3d16ba291aa0,nao relevante,Tomada de contas especial da Caixa Economica Federal; tipo e entidade incompativeis.,Vitoria Novaes da Costa
+NI-001,tcu-56afc22048f8,nao relevante,Atos de admissao da Caixa Economica Federal; tipo e entidade incompativeis.,Vitoria Novaes da Costa
+NI-001,tcu-583bd350d931,nao relevante,"E denuncia, mas relativa ao Conselho Regional dos Tecnicos Industriais de Sao Paulo, nao ao Sesc/MS.",Vitoria Novaes da Costa
+NI-001,tcu-8c6fd5cd4018,nao relevante,Tomada de contas especial da Funasa/PI; tipo e entidade incompativeis.,Vitoria Novaes da Costa
+NI-001,tcu-94b4121ab4af,nao relevante,"Denuncia referente ao Conselho Regional de Farmacia do Rio Grande do Sul, nao ao Sesc/MS.",Vitoria Novaes da Costa
+NI-001,tcu-b7e5fc342a4f,nao relevante,Denuncia referente ao Banco do Brasil e a concessao Piaui Conectado; nao corresponde ao Sesc/MS.,Vitoria Novaes da Costa
+NI-001,tcu-b8b9f99c805c,relevante,Acordao que apreciou a denuncia do Pregao Eletronico 23/PE-029 da Administracao Regional do Sesc/MS. Satisfaz TIPOPROCESSO=DEN e a condicao de entidade. Colegiado: Plenario; relator: Antonio Anastasia.,Vitoria Novaes da Costa
+NI-001,tcu-d2990ec11483,nao relevante,"Tomada de contas especial envolvendo o Sesc de Minas Gerais (Sesc/MG), nao a denuncia do Sesc/MS.",Vitoria Novaes da Costa
+NI-001,tcu-dc3ca48543ad,nao relevante,Atos de admissao da Caixa Economica Federal; tipo e entidade incompativeis.,Vitoria Novaes da Costa
+NI-001,tcu-e8a17524cb18,nao relevante,Denuncia referente ao Municipio de Conde/BA e a utilizacao de recursos do Fundeb; nao corresponde ao Sesc/MS.,Vitoria Novaes da Costa
+NI-001,tcu-f21bba724281,nao relevante,"Relatorio de levantamento sobre o sistema metroferroviario de Recife/PE, envolvendo a CBTU; tipo e entidade incompativeis.",Vitoria Novaes da Costa
+NI-001,tcu-fae5c924b80f,nao relevante,Atos de admissao da Caixa Economica Federal; tipo e entidade incompativeis.,Vitoria Novaes da Costa
+NI-002,tcu-0ec5c21b7263,nao relevante,Tomada de contas especial sobre construcao de escola em Aurora do Tocantins/TO; nao corresponde a denuncia de Pernambuco nem aos dois subtemas exigidos.,Vitoria Novaes da Costa
+NI-002,tcu-3cdd60d07caf,nao relevante,Tomada de contas especial relacionada a construcao de creches em Itabela/BA; nao corresponde ao caso investigado.,Vitoria Novaes da Costa
+NI-002,tcu-3e8a3f79b7dc,nao relevante,Denuncia sobre recursos de precatorios do Fundef em Cedro/CE; nao aborda conjuntamente falta de merenda escolar e contratos temporarios de professores em Pernambuco.,Vitoria Novaes da Costa
+NI-002,tcu-5567c745c20f,relevante,"Acordao 16/2024 - TCU - Plenario: denuncia sobre possiveis irregularidades na aplicacao de recursos destinados a educacao em Pernambuco, abordando conjuntamente a alegada falta de merenda nas escolas e a manutencao de contratos temporarios de professores. Atende aos criterios da NI-002.",Vitoria Novaes da Costa
+NI-002,tcu-657555d45ba9,nao relevante,Denuncia sobre contratacao temporaria e recursos do Fundeb em Amarante/PI; nao trata do caso de Pernambuco nem reune os dois subtemas exigidos.,Vitoria Novaes da Costa
+NI-002,tcu-6d685eb1245c,nao relevante,Denuncia sobre aquisicao de uniformes escolares em Estancia Velha/RS; nao corresponde ao caso de Pernambuco nem aborda os dois subtemas.,Vitoria Novaes da Costa
+NI-002,tcu-899d5e57138e,nao relevante,Tomada de contas especial sobre recursos de precatorios do Fundef e honorarios advocaticios em Sao Bento do Trairi/RN; nao corresponde a denuncia investigada.,Vitoria Novaes da Costa
+NI-002,tcu-a3f4e285efe9,nao relevante,Solicitacao do Congresso Nacional sobre financiamento do programa Escola Digna no Maranhao; nao aborda conjuntamente merenda escolar e contratos temporarios de professores em Pernambuco.,Vitoria Novaes da Costa
+NI-002,tcu-b859a210f456,nao relevante,Tomada de contas especial sobre recursos para construcao de escola em Itororo/BA; nao corresponde a denuncia da NI-002.,Vitoria Novaes da Costa
+NI-002,tcu-c59c1811f59c,nao relevante,Denuncia sobre irregularidades em transporte escolar em Piripiri/PI; nao trata do caso de Pernambuco nem dos dois subtemas exigidos.,Vitoria Novaes da Costa
+NI-002,tcu-d9482d3f8c4b,nao relevante,Denuncia sobre precatorios do Fundef e pagamento de profissionais da educacao em Belo Campo/BA; nao corresponde ao caso de Pernambuco nem reune os dois subtemas obrigatorios.,Vitoria Novaes da Costa
+NI-002,tcu-e59f6ac4fafd,nao relevante,Monitoramento de determinacoes relacionadas a construcao de escola em Eirunepe/AM; nao corresponde a denuncia da NI-002.,Vitoria Novaes da Costa
+NI-002,tcu-e8a17524cb18,nao relevante,Denuncia sobre aplicacao de recursos do Fundeb e contratacao de estagiarios em Conde/BA; nao corresponde ao caso de Pernambuco nem a combinacao exigida de merenda e contratos temporarios de professores.,Vitoria Novaes da Costa
+NI-002,tcu-f6ba155692bf,nao relevante,Tomada de contas especial sobre prestacao de contas de programa de educacao infantil em Santa Helena/MA; nao atende aos criterios da NI-002.,Vitoria Novaes da Costa
+NI-003,tcu-0c38339fc010,nao relevante,Monitoramento (MON) relacionado a Autopista Planalto Sul; nao atende ao tipo processual REPR.,Vitoria Novaes da Costa
+NI-003,tcu-232e54560335,nao relevante,"Representacao relacionada a ferrovia Nova Transnordestina, sem pedagio rodoviario.",Vitoria Novaes da Costa
+NI-003,tcu-3a418fef465b,relevante,Pedido de reexame em representacao da ANTT sobre revisoes das TBP no Polo de Pelotas/RS. O recurso discute diretamente a suspensao de deliberacao que autorizou incremento da tarifa de pedagio. TCU conheceu do recurso e negou provimento.,Vitoria Novaes da Costa
+NI-003,tcu-3b032cae4fc9,nao relevante,"Pedido de reexame referente a BR-040/RJ/MG. Embora a representacao original envolvesse aumento tarifario, o recurso efetivamente examinado tratou da realocacao da praca de pedagio e dos estudos regulatorios, com tarifa apenas como contexto. Decisao recursal avaliada individualmente.",Vitoria Novaes da Costa
+NI-003,tcu-419c4875efb6,relevante,"Representacao da ANTT sobre irregularidades nos reajustes da tarifa basica de pedagio da BR-040/RJ/MG, envolvendo a Concer. Vinculo tarifario central e explicito.",Vitoria Novaes da Costa
+NI-003,tcu-50e6c1ff3306,nao relevante,"Representacao sobre passe livre e transporte rodoviario interestadual de passageiros, sem tema de pedagio.",Vitoria Novaes da Costa
+NI-003,tcu-51a937b445a6,nao relevante,"Representacao sobre seguranca e deslizamentos na BR-376/PR, sem tema tarifario.",Vitoria Novaes da Costa
+NI-003,tcu-53d307eee08b,nao relevante,Embargos de declaracao da ANTT referentes a BR-040. O objeto dos embargos foi a fundamentacao da realocacao da praca de pedagio e dos estudos de trafego; a revisao tarifaria figurou como contexto. TCU acolheu parcialmente os embargos sem efeitos infringentes. Decisao recursal avaliada individualmente.,Vitoria Novaes da Costa
+NI-003,tcu-546658cbed83,nao relevante,"Representacao sobre manutencao e obrigacoes contratuais na BR-153/SP, sem vinculo tarifario demonstrado.",Vitoria Novaes da Costa
+NI-003,tcu-6280698a1215,nao relevante,Tomada de contas especial (TCE) ligada ao DNIT e a custos de obras rodoviarias.,Vitoria Novaes da Costa
+NI-003,tcu-68695e8b94f7,relevante,"Representacao sobre a Deliberacao ANTT 443/2023, que autorizou incremento da tarifa de pedagio no Polo Pelotas/RS. TCU considerou a representacao parcialmente procedente, julgou prejudicada a cautelar e determinou apresentacao de cronograma de nova licitacao.",Vitoria Novaes da Costa
+NI-003,tcu-6a817ed9b194,nao relevante,"Representacao sobre transferencia de controle acionario da concessionaria da BR-393/RJ, sem tema tarifario.",Vitoria Novaes da Costa
+NI-003,tcu-6b447cbd49e2,nao relevante,Embargos em representacao sobre a ferrovia Nova Transnordestina.,Vitoria Novaes da Costa
+NI-003,tcu-720a8d2ab1ce,nao relevante,"Representacao envolvendo o Municipio de Santana/BA, nao a ANTT.",Vitoria Novaes da Costa
+NI-003,tcu-727d91eb42bf,relevante,"Representacao da ANTT sobre incremento da Tarifa Basica de Pedagio na concessao Concebra, vinculada a Lei dos Caminhoneiros. TCU reconheceu a prescricao das pretensoes punitiva e ressarcitoria e arquivou os autos. PENDENCIA DOCUMENTAL: ASSUNTO menciona 2a revisao extraordinaria e ACORDAO menciona 4a revisao extraordinaria; conferir divergencia antes de descrever a revisao especifica na resposta final. Rotulo de relevancia definitivo.",Vitoria Novaes da Costa
+NI-003,tcu-742551a71a28,nao relevante,Representacao sobre relicitacao da ferrovia Malha Oeste.,Vitoria Novaes da Costa
+NI-003,tcu-7552910aa30f,nao relevante,"Representacao sobre desequilibrio economico-financeiro e parametros de desempenho, sem vinculo tarifario explicito demonstrado.",Vitoria Novaes da Costa
+NI-003,tcu-7972470eb564,nao relevante,"Representacao da ANTT sobre inclusao de obras na concessao Concebra, em fase de monitoramento. ASSUNTO e ACORDAO mencionam efeitos financeiros genericos, sem vinculo demonstrado com aumento de pedagio. RESSALVA: SUMARIO, RELATORIO e VOTO ausentes no registro congelado; vinculo tarifario nao demonstrado nos campos efetivamente disponiveis; nao se presume o conteudo dos campos ausentes.",Vitoria Novaes da Costa
+NI-003,tcu-7d71021ead3c,nao relevante,Representacao referente a licitacao municipal em Turiacu/MA.,Vitoria Novaes da Costa
+NI-003,tcu-8af53cde2b5f,nao relevante,Tomada de contas especial relacionada ao anel viario de Belo Horizonte/MG.,Vitoria Novaes da Costa
+NI-003,tcu-8f694545bf31,nao relevante,Denuncia (DEN) sobre contratacao de servicos de apoio tecnico na ANTT.,Vitoria Novaes da Costa
+NI-003,tcu-904cfd28fb7e,nao relevante,"Monitoramento (MON) relacionado ao reajuste da TBP da BR-101/BA/ES. O tema tarifario esta presente, mas o documento nao e uma representacao.",Vitoria Novaes da Costa
+NI-003,tcu-945cef90f456,nao relevante,"Embargos de declaracao em representacao sobre inclusao de obras na Concebra. RESSALVA: o VOTO contem evidencia substantiva de impacto tarifario positivo estimado em 20,62%, mas os embargos discutem a natureza juridica do comando de ciencia e a competencia do TCU, nao o aumento tarifario como objeto efetivo do recurso.",Vitoria Novaes da Costa
+NI-003,tcu-959e6b754b68,nao relevante,Relatorio de auditoria (RA) envolvendo revisao tarifaria; nao atende ao requisito REPR.,Vitoria Novaes da Costa
+NI-003,tcu-aaf0627e427b,nao relevante,Acompanhamento (ACOM) da desestatizacao das Rotas Sertaneja e do Zebu.,Vitoria Novaes da Costa
+NI-003,tcu-c1e0b7b378c0,nao relevante,Acompanhamento (ACOM) sobre regulacao de malha ferroviaria.,Vitoria Novaes da Costa
+NI-003,tcu-c647d23f238c,nao relevante,Representacao envolvendo ANTT e Anac sobre reequilibrio contratual decorrente de enchentes no RS; nao apresenta vinculo demonstrado com aumento de pedagio.,Vitoria Novaes da Costa
+NI-003,tcu-ca7e3de12e1d,relevante,"Representacao contra reajuste de 15,42% na tarifa de pedagio da BR-040/RJ/MG, administrada pela Concer e aprovado pela ANTT. Tema tarifario direto e explicito. PENDENCIA DOCUMENTAL: conferir o dispositivo integral do Acordao 2.353/2024-TCU-Plenario antes de descrever precisamente a deliberacao final. Rotulo de relevancia definitivo.",Vitoria Novaes da Costa
+NI-003,tcu-d1a973984f1d,nao relevante,Processo de aposentadoria (APOS) vinculado ao DNIT.,Vitoria Novaes da Costa
+NI-003,tcu-eb09c9c4476a,relevante,"Representacao sobre alegado aumento abusivo da tarifa de pedagio na BR-163/MS, entre Sonora e Mundo Novo. O TCU nao conheceu da representacao por inadmissibilidade e determinou seu apensamento a outro processo. A ausencia de julgamento de merito nao afasta a relevancia tematica.",Vitoria Novaes da Costa
+NI-003,tcu-f53a0834b605,nao relevante,Monitoramento (MON) de cumprimento de determinacao a ANTT; ENTIDADE vazia no registro e ausencia de discussao tarifaria demonstrada.,Vitoria Novaes da Costa
+NI-003,tcu-f9b756ee0db3,nao relevante,"Representacao sobre relatorios de fiscalizacao e monitoramento de concessoes rodoviarias, sem vinculo com reajuste/aumento de pedagio demonstrado no material avaliado.",Vitoria Novaes da Costa
+NI-003,tcu-fd86e78f4f96,nao relevante,"Representacao relacionada a ferrovia Nova Transnordestina, sem tema de pedagio rodoviario.",Vitoria Novaes da Costa

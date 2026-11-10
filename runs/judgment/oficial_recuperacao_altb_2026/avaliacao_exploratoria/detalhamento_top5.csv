@@ -1,0 +1,83 @@
+need_id,formulation,architecture,rank,doc_id,decisao_humana
+NI-001,direct,vector,1,tcu-1b7c45fcd7e5,nao relevante
+NI-001,direct,vector,2,tcu-dc3ca48543ad,nao relevante
+NI-001,direct,vector,3,tcu-fae5c924b80f,nao relevante
+NI-001,direct,vector,4,tcu-034c4b1fbd11,nao relevante
+NI-001,direct,vector,5,tcu-56afc22048f8,nao relevante
+NI-001,direct,hybrid,1,tcu-b8b9f99c805c,relevante
+NI-001,paraphrase,vector,1,tcu-f21bba724281,nao relevante
+NI-001,paraphrase,vector,2,tcu-3d16ba291aa0,nao relevante
+NI-001,paraphrase,vector,3,tcu-1554924671c9,nao relevante
+NI-001,paraphrase,vector,4,tcu-011cea3ce1e6,nao relevante
+NI-001,paraphrase,vector,5,tcu-d2990ec11483,nao relevante
+NI-001,paraphrase,hybrid,1,tcu-1554924671c9,nao relevante
+NI-001,paraphrase,hybrid,2,tcu-e8a17524cb18,nao relevante
+NI-001,paraphrase,hybrid,3,tcu-0663cdfee5a6,nao relevante
+NI-001,paraphrase,hybrid,4,tcu-b7e5fc342a4f,nao relevante
+NI-001,paraphrase,hybrid,5,tcu-583bd350d931,nao relevante
+NI-001,verbose,vector,1,tcu-94b4121ab4af,nao relevante
+NI-001,verbose,vector,2,tcu-e8a17524cb18,nao relevante
+NI-001,verbose,vector,3,tcu-011cea3ce1e6,nao relevante
+NI-001,verbose,vector,4,tcu-8c6fd5cd4018,nao relevante
+NI-001,verbose,vector,5,tcu-27ca0e17e5da,nao relevante
+NI-001,verbose,hybrid,1,tcu-b8b9f99c805c,relevante
+NI-002,direct,vector,1,tcu-5567c745c20f,relevante
+NI-002,direct,vector,2,tcu-d9482d3f8c4b,nao relevante
+NI-002,direct,vector,3,tcu-6d685eb1245c,nao relevante
+NI-002,direct,vector,4,tcu-a3f4e285efe9,nao relevante
+NI-002,direct,vector,5,tcu-3cdd60d07caf,nao relevante
+NI-002,direct,hybrid,1,tcu-5567c745c20f,relevante
+NI-002,direct,hybrid,2,tcu-d9482d3f8c4b,nao relevante
+NI-002,direct,hybrid,3,tcu-6d685eb1245c,nao relevante
+NI-002,direct,hybrid,4,tcu-c59c1811f59c,nao relevante
+NI-002,direct,hybrid,5,tcu-e8a17524cb18,nao relevante
+NI-002,paraphrase,vector,1,tcu-5567c745c20f,relevante
+NI-002,paraphrase,vector,2,tcu-f6ba155692bf,nao relevante
+NI-002,paraphrase,vector,3,tcu-d9482d3f8c4b,nao relevante
+NI-002,paraphrase,vector,4,tcu-0ec5c21b7263,nao relevante
+NI-002,paraphrase,vector,5,tcu-899d5e57138e,nao relevante
+NI-002,paraphrase,hybrid,1,tcu-5567c745c20f,relevante
+NI-002,paraphrase,hybrid,2,tcu-d9482d3f8c4b,nao relevante
+NI-002,paraphrase,hybrid,3,tcu-6d685eb1245c,nao relevante
+NI-002,paraphrase,hybrid,4,tcu-e8a17524cb18,nao relevante
+NI-002,paraphrase,hybrid,5,tcu-3e8a3f79b7dc,nao relevante
+NI-002,verbose,vector,1,tcu-5567c745c20f,relevante
+NI-002,verbose,vector,2,tcu-d9482d3f8c4b,nao relevante
+NI-002,verbose,vector,3,tcu-f6ba155692bf,nao relevante
+NI-002,verbose,vector,4,tcu-b859a210f456,nao relevante
+NI-002,verbose,vector,5,tcu-e59f6ac4fafd,nao relevante
+NI-002,verbose,hybrid,1,tcu-5567c745c20f,relevante
+NI-002,verbose,hybrid,2,tcu-d9482d3f8c4b,nao relevante
+NI-002,verbose,hybrid,3,tcu-c59c1811f59c,nao relevante
+NI-002,verbose,hybrid,4,tcu-e8a17524cb18,nao relevante
+NI-002,verbose,hybrid,5,tcu-657555d45ba9,nao relevante
+NI-003,direct,vector,1,tcu-904cfd28fb7e,nao relevante
+NI-003,direct,vector,2,tcu-727d91eb42bf,relevante
+NI-003,direct,vector,3,tcu-6280698a1215,nao relevante
+NI-003,direct,vector,4,tcu-f53a0834b605,nao relevante
+NI-003,direct,vector,5,tcu-0c38339fc010,nao relevante
+NI-003,direct,hybrid,1,tcu-727d91eb42bf,relevante
+NI-003,direct,hybrid,2,tcu-ca7e3de12e1d,relevante
+NI-003,direct,hybrid,3,tcu-7972470eb564,nao relevante
+NI-003,direct,hybrid,4,tcu-7d71021ead3c,nao relevante
+NI-003,direct,hybrid,5,tcu-720a8d2ab1ce,nao relevante
+NI-003,paraphrase,vector,1,tcu-6280698a1215,nao relevante
+NI-003,paraphrase,vector,2,tcu-904cfd28fb7e,nao relevante
+NI-003,paraphrase,vector,3,tcu-727d91eb42bf,relevante
+NI-003,paraphrase,vector,4,tcu-8af53cde2b5f,nao relevante
+NI-003,paraphrase,vector,5,tcu-d1a973984f1d,nao relevante
+NI-003,paraphrase,hybrid,1,tcu-727d91eb42bf,relevante
+NI-003,paraphrase,hybrid,2,tcu-68695e8b94f7,relevante
+NI-003,paraphrase,hybrid,3,tcu-eb09c9c4476a,relevante
+NI-003,paraphrase,hybrid,4,tcu-50e6c1ff3306,nao relevante
+NI-003,paraphrase,hybrid,5,tcu-f9b756ee0db3,nao relevante
+NI-003,verbose,vector,1,tcu-8f694545bf31,nao relevante
+NI-003,verbose,vector,2,tcu-f9b756ee0db3,nao relevante
+NI-003,verbose,vector,3,tcu-c1e0b7b378c0,nao relevante
+NI-003,verbose,vector,4,tcu-959e6b754b68,nao relevante
+NI-003,verbose,vector,5,tcu-aaf0627e427b,nao relevante
+NI-003,verbose,hybrid,1,tcu-f9b756ee0db3,nao relevante
+NI-003,verbose,hybrid,2,tcu-419c4875efb6,relevante
+NI-003,verbose,hybrid,3,tcu-50e6c1ff3306,nao relevante
+NI-003,verbose,hybrid,4,tcu-727d91eb42bf,relevante
+NI-003,verbose,hybrid,5,tcu-68695e8b94f7,relevante
